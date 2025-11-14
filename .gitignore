@@ -1,0 +1,12 @@
+# frontend
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.env
+
+# backend
+# 数据库实例文件
+instance/*
+backend/instance/*
+backend/.env
