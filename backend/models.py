@@ -10,6 +10,7 @@ from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
 import json
+from datetime import datetime, timedelta
 
 db = SQLAlchemy()
 
@@ -228,8 +229,27 @@ class Comment(db.Model):
     # 点赞关系
     likes = db.relationship('Like', backref='comment', lazy='dynamic', cascade='all, delete-orphan')
     
+
     def to_dict(self, include_replies=True):
-        """转换为字典"""
+        author = self.author  # 关联的用户对象
+
+        # 兜底：防止 created_at / updated_at 为 None
+        created = self.created_at or datetime.utcnow()
+        updated = self.updated_at or self.created_at or created
+
+        # 转为北京时间（简单加 8 小时；如果本身就是 UTC）
+        beijing_created = created + timedelta(hours=8)
+        beijing_updated = updated + timedelta(hours=8)
+
+        # 兜底：防止 author 为空（理论上正常数据不会，但防一手）
+        author_name = None
+        author_avatar = ''
+        author_id = None
+        if author is not None:
+            author_name = author.nickname or author.username
+            author_avatar = author.avatar or ''
+            author_id = author.id
+
         data = {
             'id': self.id,
             'content': self.content,
@@ -237,15 +257,28 @@ class Comment(db.Model):
             'status': self.status,
             'like_count': self.like_count,
             'reply_count': self.reply_count,
-            'author': self.author.to_dict(),
+
+            # ⭐ 前端需要的字段
+            'author_name': author_name or '匿名用户',
+            'author_avatar': author_avatar,
+            'author_id': author_id,
+
             'post_id': self.post_id,
             'parent_id': self.parent_id,
-            'created_at': self.created_at.isoformat(),
-            'updated_at': self.updated_at.isoformat()
+
+            # ⭐ 格式化后的北京时间
+            'created_at': beijing_created.strftime("%Y-%m-%d %H:%M:%S"),
+            'updated_at': beijing_updated.strftime("%Y-%m-%d %H:%M:%S"),
         }
+
         if include_replies and self.replies:
-            data['replies'] = [reply.to_dict(include_replies=False) for reply in self.replies.limit(5)]
+            data['replies'] = [
+                reply.to_dict(include_replies=False)
+                for reply in self.replies.limit(5)
+            ]
+
         return data
+
 
 class Tag(db.Model):
     """标签模型"""

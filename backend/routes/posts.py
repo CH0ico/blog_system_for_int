@@ -660,3 +660,55 @@ def get_search_suggestions():
         })
     
     return jsonify({'suggestions': suggestions})
+
+from flask_jwt_extended import jwt_required, get_jwt_identity
+from flask import request, jsonify
+from models import db, Post, Comment, User
+@posts_bp.route('/<int:post_id>/comments', methods=['GET'])
+def get_post_comments(post_id):
+    """获取文章评论列表"""
+    post = Post.query.get_or_404(post_id)
+    
+    # 简单按时间正序
+    comments = Comment.query.filter_by(post_id=post.id).order_by(Comment.created_at.asc()).all()
+    
+    return jsonify({
+        'comments': [c.to_dict() for c in comments]
+    })
+
+
+@posts_bp.route('/<int:post_id>/comments', methods=['POST'])
+@jwt_required()
+def create_comment(post_id):
+    """给文章添加评论"""
+    post = Post.query.get_or_404(post_id)
+    current_user_id = get_jwt_identity()
+    
+    data = request.get_json() or {}
+    content = data.get('content', '').strip()
+    parent_id = data.get('parent_id')   # 用于楼中楼/回复，可选
+    
+    if not content:
+        return jsonify({
+            'message': '评论内容不能为空',
+            'error': 'empty_content'
+        }), 400
+    
+    # 创建评论
+    comment = Comment(
+        post_id=post.id,
+        author_id=current_user_id,
+        content=content,
+        parent_id=parent_id
+    )
+    db.session.add(comment)
+    
+    # 顺便更新文章评论数
+    post.comment_count = (post.comment_count or 0) + 1
+    
+    db.session.commit()
+    
+    return jsonify({
+        'message': '评论成功',
+        'comment': comment.to_dict()
+    }), 201

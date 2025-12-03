@@ -154,8 +154,67 @@
     <section class="post-comments" v-if="post && post.allow_comments">
       <div class="container">
         <h3>评论</h3>
-        <!-- 这里接入 CommentList 组件即可 -->
-        <p class="placeholder">评论组件待接入</p>
+
+        <!-- 登录用户：发表评论 -->
+        <div v-if="authStore.isAuthenticated" class="comment-editor">
+          <el-input
+            v-model="newComment"
+            type="textarea"
+            :rows="3"
+            placeholder="写下你的评论..."
+          />
+          <div class="comment-editor-actions">
+            <el-button
+              type="primary"
+              size="small"
+              :loading="submittingComment"
+              @click="submitComment"
+            >
+              发表评论
+            </el-button>
+          </div>
+        </div>
+
+        <!-- 未登录提示 -->
+        <div v-else class="comment-login-tip">
+          <el-alert
+            title="登录后可以发表评论"
+            type="info"
+            :closable="false"
+            show-icon
+          />
+        </div>
+
+        <!-- 评论列表 -->
+        <div v-if="comments.length" class="comment-list">
+          <div v-for="c in comments" :key="c.id" class="comment-item">
+            <el-avatar
+              :size="40"
+              :src="c.author_avatar || ''"
+              class="comment-avatar"
+            >
+              {{ c.author_name?.[0] || '匿' }}
+            </el-avatar>
+
+            <div class="comment-body">
+              <div class="comment-header">
+                <span class="comment-author">{{ c.author_name }}</span>
+                <span class="comment-dot">·</span>
+                <span class="comment-time">{{ c.created_at }}</span>
+              </div>
+
+              <div class="comment-content">
+                {{ c.content }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 无评论 -->
+        <div v-else class="comment-empty">
+          <el-empty description="还没有评论，快来抢沙发～" />
+        </div>
+
       </div>
     </section>
 
@@ -173,8 +232,9 @@
         </template>
       </el-result>
     </div>
-  </div>
+  </div>   <!-- 关闭最外层的 post-detail -->
 </template>
+
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
@@ -186,6 +246,8 @@ import {
 import { useAuthStore } from '@/stores/auth'
 import { usePostsStore } from '@/stores/posts'
 
+import axios from 'axios'
+
 const route = useRoute()
 const router = useRouter()
 const authStore = useAuthStore()
@@ -193,6 +255,11 @@ const postsStore = usePostsStore()
 
 const loading = ref(true)
 const post = ref(null)
+
+// 新增的评论相关状态
+const comments = ref([])
+const newComment = ref('')
+const submittingComment = ref(false)
 
 const canEdit = computed(() =>
   authStore.isAuthenticated &&
@@ -248,6 +315,54 @@ const copyLink = () => {
   ElMessage.success('链接已复制')
 }
 
+
+// 拉取评论列表
+const fetchComments = async () => {
+  try {
+    const { data } = await axios.get(`/api/posts/${route.params.id}/comments`)
+    comments.value = data.comments || []
+  } catch (err) {
+    console.error('获取评论失败', err)
+  }
+}
+
+import api from '@/utils/api'
+
+// 发表评论
+const submitComment = async () => {
+  if (!newComment.value.trim()) {
+    ElMessage.warning('评论内容不能为空')
+    return
+  }
+
+  if (!authStore.isAuthenticated) {
+    ElMessage.warning('请先登录再发表评论')
+    router.push({ name: 'Login', query: { redirect: route.fullPath } })
+    return
+  }
+
+  submittingComment.value = true
+  try {
+    await api.post(`/posts/${route.params.id}/comments`, {
+      content: newComment.value
+    })
+
+    newComment.value = ''
+    await fetchComments()
+    ElMessage.success('评论成功')
+
+  } catch (err) {
+    console.error('发表评论失败', err)
+    ElMessage.error('发表评论失败')
+  } finally {
+    submittingComment.value = false
+  }
+}
+
+
+
+
+
 const handleMoreAction = (cmd) => {
   switch (cmd) {
     case 'edit':
@@ -268,10 +383,14 @@ const handleMoreAction = (cmd) => {
   }
 }
 
-onMounted(() => {
-  fetchPost()
+onMounted(async () => {
+  loading.value = true          // 如果你有 loading，可以顺带加上
+  await fetchPost()
+  await fetchComments()  //新增~~~
+  loading.value = false
 })
 </script>
+
 
 <style scoped>
 .post-detail {
@@ -391,4 +510,53 @@ onMounted(() => {
     align-items: flex-start;
   }
 }
+.comment-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  transition: background 0.15s ease;
+}
+
+.comment-item:hover {
+  background: #fafafa;
+}
+
+.comment-avatar {
+  flex-shrink: 0;
+}
+
+.comment-body {
+  flex: 1;
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.comment-author {
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+}
+
+.comment-dot {
+  color: var(--el-text-color-secondary);
+}
+
+.comment-time {
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
+}
+
+.comment-content {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--el-text-color-regular);
+  white-space: pre-wrap;
+}
+
 </style>
