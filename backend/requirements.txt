@@ -35,9 +35,13 @@ flake8==6.1.0
 gunicorn==21.2.0
 gevent==24.11.1
 
-# 认证/用户会话
+
 Flask-Login>=0.6.3
 
-# 其余可能缺的常用扩展
-Flask-Migrate>=4.0.5        # 数据库迁移（可选）
-python-dotenv>=1.0.0        # 多数项目都要
+
+Flask-Migrate>=4.0.5     
+python-dotenv>=1.0.0      
+
+# Content rendering
+markdown2>=2.5.0
+bleach>=6.1.0

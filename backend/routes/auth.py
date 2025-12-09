@@ -8,12 +8,16 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token, create_refresh_token
 from datetime import datetime, timedelta
+from flask import current_app
+from werkzeug.utils import secure_filename
+import os
+
 from models import db, User
-from utils.validators import validate_email, validate_password, validate_username
+from utils.validators import validate_email, validate_password, validate_username, validate_url, sanitize_filename
 from utils.auth import (
     generate_confirmation_token, confirm_token,
     generate_password_reset_token, confirm_password_reset_token,
-    get_user_by_email, has_permission
+    get_user_by_email, has_permission, get_user_permissions
 )
 
 auth_bp = Blueprint('auth', __name__)
@@ -95,6 +99,7 @@ def register():
     return jsonify({
         'message': '注册成功',
         'user': user.to_dict(include_email=True),
+        'permissions': get_user_permissions(user),
         'access_token': access_token,
         'refresh_token': refresh_token,
         'email_confirmation_token': token
@@ -150,6 +155,7 @@ def login():
     return jsonify({
         'message': '登录成功',
         'user': user.to_dict(include_email=True),
+        'permissions': get_user_permissions(user),
         'access_token': access_token,
         'refresh_token': refresh_token
     })
@@ -170,7 +176,8 @@ def refresh():
     new_access_token = create_access_token(identity=user)
     return jsonify({
         'access_token': new_access_token,
-        'user': user.to_dict()
+        'user': user.to_dict(),
+        'permissions': get_user_permissions(user)
     })
 
 @auth_bp.route('/logout', methods=['POST'])
@@ -327,13 +334,17 @@ def forgot_password():
     
     # 生成重置令牌
     token = generate_password_reset_token(email)
+    frontend_url = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+    reset_link = f"{frontend_url}/reset-password?token={token}"
     
     # 在实际应用中，这里应该发送重置邮件
     # send_password_reset_email(user.email, token)
     
+    # 简化实现：返回重置链接，若配置了邮件可扩展发送
     return jsonify({
         'message': '如果邮箱存在，重置邮件已发送',
-        'reset_token': token  # 开发环境返回令牌
+        'reset_token': token,
+        'reset_link': reset_link
     })
 
 @auth_bp.route('/reset-password', methods=['POST'])
@@ -378,6 +389,52 @@ def reset_password():
     db.session.commit()
     
     return jsonify({'message': '密码重置成功'})
+
+
+@auth_bp.route('/user/<string:username>', methods=['GET'])
+@jwt_required(optional=True)
+def get_user_profile(username):
+    """获取用户公开资料，附带关注状态"""
+    user = User.query.filter_by(username=username).first()
+    if not user:
+        return jsonify({'message': '用户不存在', 'error': 'user_not_found'}), 404
+    current_user_id = get_jwt_identity()
+    is_following = False
+    if current_user_id:
+        from models import Follow
+        is_following = Follow.query.filter_by(follower_id=current_user_id, followed_id=user.id).first() is not None
+    data = user.to_dict(include_email=False)
+    data['is_following'] = is_following
+    return jsonify({'user': data})
+
+
+@auth_bp.route('/avatar', methods=['POST'])
+@jwt_required()
+def upload_avatar():
+    """上传并更新用户头像"""
+    if 'file' not in request.files:
+        return jsonify({'message': '未找到文件', 'error': 'missing_file'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'message': '文件名为空', 'error': 'empty_filename'}), 400
+    filename = secure_filename(sanitize_filename(file.filename))
+    if not filename:
+        return jsonify({'message': '文件名无效', 'error': 'invalid_filename'}), 400
+    upload_folder = current_app.config.get('UPLOAD_FOLDER', os.path.join(current_app.root_path, 'uploads'))
+    avatar_folder = os.path.join(upload_folder, 'avatars')
+    os.makedirs(avatar_folder, exist_ok=True)
+    filepath = os.path.join(avatar_folder, filename)
+    file.save(filepath)
+    public_path = f"uploads/avatars/{filename}"
+    base_url = request.host_url.rstrip('/')
+    public_url = f"{base_url}/{public_path}"
+
+    current_user_id = get_jwt_identity()
+    user = User.query.get(current_user_id)
+    user.avatar = public_url
+    db.session.commit()
+
+    return jsonify({'message': '上传成功', 'avatar': public_url, 'path': public_path})
 
 @auth_bp.route('/confirm-email', methods=['POST'])
 def confirm_email():

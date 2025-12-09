@@ -14,9 +14,10 @@ from models import db, Post, Tag, Category, User, Like, Favorite, Comment
 from utils.validators import (
     validate_post_title, validate_post_content, 
     validate_tag_name, validate_category_name,
-    generate_excerpt, clean_search_query
+    generate_excerpt, clean_search_query, validate_slug
 )
 from utils.auth import has_permission
+from utils.renderer import render_markdown
 
 posts_bp = Blueprint('posts', __name__)
 
@@ -216,6 +217,7 @@ def create_post():
         title=title,
         slug=slug,
         content=content,
+        content_html=render_markdown(content),
         summary=summary or generate_excerpt(content),
         status=status,
         is_featured=is_featured,
@@ -317,6 +319,7 @@ def update_post(post_id):
                 'error': 'invalid_content'
             }), 400
         post.content = content
+        post.content_html = render_markdown(content)
         post.summary = generate_excerpt(content)
     
     if 'summary' in data:

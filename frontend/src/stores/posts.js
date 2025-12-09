@@ -25,7 +25,9 @@ export const usePostsStore = defineStore('posts', () => {
   const fetchPosts = async (params = {}) => {
     loading.value = true
     try {
-      const response = await api.get('/posts', { params })
+      const endpoint = params.mine ? '/posts/mine' : '/posts'
+      const { mine, ...rest } = params
+      const response = await api.get(endpoint, { params: rest })
       const { posts: postsData, pagination: paginationData } = response.data
       
       if (params.page && params.page > 1) {
@@ -190,6 +192,10 @@ export const usePostsStore = defineStore('posts', () => {
       throw error
     }
   }
+
+  // 兼容旧调用名
+  const toggleLike = async (postId) => likePost(postId)
+  const toggleFavorite = async (postId) => favoritePost(postId)
   
   // 获取热门文章
   const fetchPopularPosts = async (params = {}) => {
@@ -284,6 +290,8 @@ export const usePostsStore = defineStore('posts', () => {
     deletePost,
     likePost,
     favoritePost,
+    toggleLike,
+    toggleFavorite,
     fetchPopularPosts,
     fetchFeaturedPosts,
     fetchArchives,

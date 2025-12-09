@@ -24,9 +24,8 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     try {
       const response = await api.post('/auth/login', credentials)
-      const { user: userData, access_token, refresh_token } = response.data
-      
-      user.value = userData
+      const { user: userData, permissions, access_token, refresh_token } = response.data
+      user.value = { ...userData, permissions: permissions || userData.permissions || [] }
       accessToken.value = access_token
       refreshToken.value = refresh_token
       
@@ -55,9 +54,8 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     try {
       const response = await api.post('/auth/register', userData)
-      const { user: userInfo, access_token, refresh_token } = response.data
-      
-      user.value = userInfo
+      const { user: userInfo, permissions, access_token, refresh_token } = response.data
+      user.value = { ...userInfo, permissions: permissions || userInfo.permissions || [] }
       accessToken.value = access_token
       refreshToken.value = refresh_token
       
@@ -111,7 +109,8 @@ export const useAuthStore = defineStore('auth', () => {
     
     try {
       const response = await api.get('/auth/me')
-      user.value = response.data.user
+      const perms = response.data.permissions || response.data.user?.permissions || []
+      user.value = { ...response.data.user, permissions: perms }
       return response.data.user
     } catch (error) {
       // 如果获取用户信息失败，可能是token无效
@@ -181,7 +180,8 @@ export const useAuthStore = defineStore('auth', () => {
   const forgotPassword = async (email) => {
     try {
       const response = await api.post('/auth/forgot-password', { email })
-      toast.success('重置邮件已发送')
+      const link = response.data.reset_link
+      toast.success(link ? '已生成重置链接' : '重置邮件已发送')
       return response.data
     } catch (error) {
       const message = error.response?.data?.message || '发送失败'

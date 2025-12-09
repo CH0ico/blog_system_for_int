@@ -64,6 +64,14 @@ const routes = [
     }
   },
   {
+    path: '/tags/:slug',
+    name: 'TagDetail',
+    component: () => import('@/views/TagDetail.vue'),
+    meta: {
+      title: '标签'
+    }
+  },
+  {
     path: '/categories',
     name: 'Categories',
     component: () => import('@/views/Categories.vue'),
@@ -103,6 +111,14 @@ const routes = [
     meta: {
       title: '通知中心',
       requiresAuth: true
+    }
+  },
+  {
+    path: '/users/:username',
+    name: 'UserProfile',
+    component: () => import('@/views/UserProfile.vue'),
+    meta: {
+      title: '用户主页'
     }
   },
   {

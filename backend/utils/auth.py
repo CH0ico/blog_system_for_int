@@ -215,8 +215,8 @@ def get_user_permissions(user):
             'follow_users'
         ])
     
-    # 作者权限
-    if user.is_active and user.is_verified:
+    # 作者权限（放宽到激活用户即可，邮箱验证后同样保留）
+    if user.is_active:
         permissions.extend([
             'create_posts',
             'edit_own_posts',

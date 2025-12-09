@@ -14,7 +14,8 @@ import logging
 from threading import Thread
 from queue import Queue
 
-from flask import Flask, request, jsonify, g
+from flask import Flask, request, jsonify, g, Response
+from flask import send_from_directory
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token, create_refresh_token, get_jwt_identity, get_jwt
 from flask_socketio import SocketIO, emit, join_room, leave_room
@@ -22,10 +23,15 @@ from flask_mail import Mail, Message
 from werkzeug.exceptions import HTTPException
 
 from models import db, User, Post, Comment, Tag, Category, Like, Favorite, Follow, Notification, ViewLog
-from utils.validators import validate_email, validate_password, validate_username
+from utils.validators import (
+    validate_email, validate_password, validate_username, validate_post_title,
+    validate_post_content, validate_tag_name, validate_category_name,
+    generate_excerpt, validate_slug, validate_comment_content
+)
 from utils.auth import generate_confirmation_token, confirm_token
 from routes.posts import posts_bp
 from routes.auth import auth_bp
+from utils.renderer import render_markdown
 
 # 配置日志
 logging.basicConfig(level=logging.INFO)
@@ -43,6 +49,7 @@ app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
 # 数据库配置
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///blog.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['UPLOAD_FOLDER'] = os.path.join(app.instance_path, 'uploads')
 
 # CORS配置
 app.config['CORS_ORIGINS'] = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000').split(',')
@@ -78,6 +85,32 @@ socketio = SocketIO(app, cors_allowed_origins=app.config['CORS_ORIGINS'], logger
 # 注册蓝图
 app.register_blueprint(posts_bp, url_prefix='/api/posts')
 app.register_blueprint(auth_bp, url_prefix='/api/auth')
+
+# 用户自己的文章（含草稿）
+@app.route('/api/posts/mine', methods=['GET'])
+@jwt_required()
+def get_my_posts():
+    current_user_id = get_jwt_identity()
+    status = request.args.get('status', None)
+    query = Post.query.filter_by(author_id=current_user_id)
+    if status:
+        query = query.filter_by(status=status)
+    query = query.order_by(Post.updated_at.desc())
+    page = request.args.get('page', 1, type=int)
+    per_page = request.args.get('per_page', 10, type=int)
+    pagination = query.paginate(page=page, per_page=per_page, error_out=False)
+    posts = [p.to_dict(include_content=False) for p in pagination.items]
+    return jsonify({
+        'posts': posts,
+        'pagination': {
+            'page': page,
+            'per_page': per_page,
+            'total': pagination.total,
+            'pages': pagination.pages,
+            'has_prev': pagination.has_prev,
+            'has_next': pagination.has_next
+        }
+    })
 
 # 全局变量存储在线用户
 online_users = {}
@@ -350,15 +383,24 @@ def create_post():
     title = data.get('title', '').strip()
     content = data.get('content', '').strip()
     summary = data.get('summary', '').strip()
+    allow_comments = data.get('allow_comments', True)
     tags = data.get('tags', [])
     categories = data.get('categories', [])
     status = data.get('status', 'draft')
     
     if not title or not content:
         return jsonify({'message': '标题和内容不能为空', 'error': 'missing_fields'}), 400
+    if not validate_post_title(title):
+        return jsonify({'message': '标题长度不能超过200个字符', 'error': 'invalid_title'}), 400
+    if not validate_post_content(content):
+        return jsonify({'message': '内容长度不能少于10个字符', 'error': 'invalid_content'}), 400
+    if status not in ['draft', 'published', 'archived']:
+        return jsonify({'message': '文章状态无效', 'error': 'invalid_status'}), 400
     
     # 生成slug
     slug = data.get('slug', title.lower().replace(' ', '-'))
+    if not validate_slug(slug):
+        slug = title.lower().replace(' ', '-')
     
     # 检查slug是否已存在
     if Post.query.filter_by(slug=slug).first():
@@ -370,8 +412,10 @@ def create_post():
         title=title,
         slug=slug,
         content=content,
-        summary=summary or content[:200],
+        content_html=render_markdown(content),
+        summary=summary or generate_excerpt(content),
         status=status,
+        allow_comments=allow_comments,
         author_id=current_user_id
     )
     
@@ -384,6 +428,8 @@ def create_post():
     # 处理标签
     if tags:
         for tag_name in tags:
+            if not validate_tag_name(tag_name):
+                continue
             tag = Tag.query.filter_by(name=tag_name).first()
             if not tag:
                 tag = Tag(name=tag_name, slug=tag_name.lower().replace(' ', '-'))
@@ -393,6 +439,8 @@ def create_post():
     # 处理分类
     if categories:
         for category_name in categories:
+            if not validate_category_name(category_name):
+                continue
             category = Category.query.filter_by(name=category_name).first()
             if not category:
                 category = Category(name=category_name, slug=category_name.lower().replace(' ', '-'))
@@ -439,17 +487,33 @@ def update_post(post_id):
     
     # 更新字段
     if 'title' in data:
-        post.title = data['title'].strip()
+        title = data['title'].strip()
+        if not validate_post_title(title):
+            return jsonify({'message': '标题长度不能超过200个字符', 'error': 'invalid_title'}), 400
+        post.title = title
+
     if 'content' in data:
-        post.content = data['content'].strip()
+        content = data['content'].strip()
+        if not validate_post_content(content):
+            return jsonify({'message': '内容长度不能少于10个字符', 'error': 'invalid_content'}), 400
+        post.content = content
+        post.content_html = render_markdown(content)
+        post.summary = generate_excerpt(content)
+
     if 'summary' in data:
         post.summary = data['summary'].strip()
+
+    if 'allow_comments' in data:
+        post.allow_comments = bool(data['allow_comments'])
+
     if 'status' in data:
         new_status = data['status']
         if new_status in ['draft', 'published', 'archived']:
             post.status = new_status
             if new_status == 'published' and not post.published_at:
                 post.published_at = datetime.utcnow()
+        else:
+            return jsonify({'message': '文章状态无效', 'error': 'invalid_status'}), 400
     
     post.updated_at = datetime.utcnow()
     db.session.commit()
@@ -522,13 +586,14 @@ def create_comment(post_id):
     content = data.get('content', '').strip()
     parent_id = data.get('parent_id')
     
-    if not content:
-        return jsonify({'message': '评论内容不能为空', 'error': 'missing_content'}), 400
+    if not validate_comment_content(content):
+        return jsonify({'message': '评论内容不能为空或超过1000字', 'error': 'invalid_content'}), 400
     
     current_user_id = get_jwt_identity()
     
     comment = Comment(
         content=content,
+        content_html=render_markdown(content),
         author_id=current_user_id,
         post_id=post_id,
         parent_id=parent_id
@@ -538,6 +603,10 @@ def create_comment(post_id):
     
     # 更新文章评论计数
     post.comment_count += 1
+    if parent_id:
+        parent_comment = Comment.query.get(parent_id)
+        if parent_comment:
+            parent_comment.reply_count = (parent_comment.reply_count or 0) + 1
     
     db.session.commit()
     
@@ -784,6 +853,52 @@ def get_dashboard_stats():
     
     return jsonify(stats)
 
+
+@app.route('/api/rss', methods=['GET'])
+def rss_feed():
+    """输出最新文章的RSS订阅源"""
+    base_url = request.url_root.rstrip('/')
+    posts = Post.query.filter_by(status='published').order_by(
+        Post.published_at.desc().nullslast(), Post.created_at.desc()
+    ).limit(30).all()
+
+    items_xml = []
+    for post in posts:
+        pub_date = (post.published_at or post.created_at).strftime('%a, %d %b %Y %H:%M:%S GMT')
+        link = f"{base_url}/post/{post.id}"
+        description = post.summary or generate_excerpt(post.content)
+        body = post.content_html or render_markdown(post.content)
+        items_xml.append(
+            f"""
+            <item>
+                <title><![CDATA[{post.title}]]></title>
+                <link>{link}</link>
+                <guid isPermaLink="true">{link}</guid>
+                <pubDate>{pub_date}</pubDate>
+                <description><![CDATA[{description}]]></description>
+                <content:encoded><![CDATA[{body}]]></content:encoded>
+            </item>
+            """
+        )
+
+    rss_xml = f"""<?xml version="1.0" encoding="UTF-8"?>
+    <rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+      <channel>
+        <title>Blog RSS</title>
+        <link>{base_url}</link>
+        <description>最新文章订阅</description>
+        {''.join(items_xml)}
+      </channel>
+    </rss>"""
+
+    return Response(rss_xml, mimetype='application/rss+xml')
+
+
+@app.route('/uploads/<path:filename>')
+def serve_uploads(filename):
+    upload_folder = app.config.get('UPLOAD_FOLDER', os.path.join(app.instance_path, 'uploads'))
+    return send_from_directory(upload_folder, filename)
+
 # 初始化数据库命令
 @app.cli.command('init-db')
 def init_db():
@@ -890,9 +1005,10 @@ if __name__ == '__main__':
     with app.app_context():
         # 确保数据库存在
         db.create_all()
+        os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
         
         # 创建示例数据（如果没有的话）
         create_sample_data()
     
     # 启动SocketIO服务器
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True, allow_unsafe_werkzeug=True)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True)

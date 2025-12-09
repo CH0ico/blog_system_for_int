@@ -58,7 +58,7 @@
           </div>
 
           <!-- 正文 -->
-          <article class="post-content article-content" v-html="post.content"></article>
+          <article class="post-content article-content" v-html="postContentHtml"></article>
 
           <!-- 分类 -->
           <div class="post-categories" v-if="post.categories.length">
@@ -154,8 +154,11 @@
     <section class="post-comments" v-if="post && post.allow_comments">
       <div class="container">
         <h3>评论</h3>
-        <!-- 这里接入 CommentList 组件即可 -->
-        <p class="placeholder">评论组件待接入</p>
+        <CommentList
+          :post-id="post.id"
+          :comment-count.sync="post.comment_count"
+          @posted="post.comment_count += 1"
+        />
       </div>
     </section>
 
@@ -185,6 +188,9 @@ import {
 } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
 import { usePostsStore } from '@/stores/posts'
+import { marked } from 'marked'
+import hljs from 'highlight.js'
+import CommentList from '@/components/posts/CommentList.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -198,6 +204,20 @@ const canEdit = computed(() =>
   authStore.isAuthenticated &&
   post.value &&
   (post.value.author.id === authStore.user.id || authStore.user.is_admin)
+)
+
+marked.setOptions({
+  highlight(code, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      return hljs.highlight(code, { language: lang }).value
+    }
+    return hljs.highlightAuto(code).value
+  }
+})
+
+const renderMarkdown = (raw) => marked.parse(raw || '')
+const postContentHtml = computed(() =>
+  post.value?.content_html || renderMarkdown(post.value?.content || '')
 )
 
 const formatDate = (iso) => {
