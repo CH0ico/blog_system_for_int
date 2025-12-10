@@ -7,14 +7,14 @@
         <div class="skeleton-line medium"></div>
       </div>
     </div>
-    
+
     <div class="skeleton-content">
       <div class="skeleton-line title"></div>
       <div class="skeleton-line"></div>
       <div class="skeleton-line"></div>
       <div class="skeleton-line short"></div>
     </div>
-    
+
     <div class="skeleton-footer">
       <div class="skeleton-stats">
         <div class="skeleton-stat"></div>

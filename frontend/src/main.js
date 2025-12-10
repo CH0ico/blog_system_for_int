@@ -1,27 +1,27 @@
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
-import ElementPlus from 'element-plus'
-import 'element-plus/dist/index.css'
-import * as ElementPlusIconsVue from '@element-plus/icons-vue'
-import Toast from 'vue-toastification'
-import 'vue-toastification/dist/index.css'
+import { createApp } from "vue";
+import { createPinia } from "pinia";
+import ElementPlus from "element-plus";
+import "element-plus/dist/index.css";
+import * as ElementPlusIconsVue from "@element-plus/icons-vue";
+import Toast from "vue-toastification";
+import "vue-toastification/dist/index.css";
 
-import App from './App.vue'
-import router from './router'
-import { useAuthStore } from './stores/auth'
-import { useSocketStore } from './stores/socket'
+import App from "./App.vue";
+import router from "./router";
+import { useAuthStore } from "./stores/auth";
+import { useSocketStore } from "./stores/socket";
 
-const app = createApp(App)
-const pinia = createPinia()
+const app = createApp(App);
+const pinia = createPinia();
 
 // 注册Element Plus图标
 for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
-  app.component(key, component)
+  app.component(key, component);
 }
 
 // Toast配置
 const toastOptions = {
-  position: 'top-right',
+  position: "top-right",
   timeout: 3000,
   closeOnClick: true,
   pauseOnFocusLoss: true,
@@ -30,26 +30,26 @@ const toastOptions = {
   draggablePercent: 0.6,
   showCloseButtonOnHover: false,
   hideProgressBar: false,
-  closeButton: 'button',
+  closeButton: "button",
   icon: true,
-  rtl: false
-}
+  rtl: false,
+};
 
-app.use(pinia)
-app.use(router)
-app.use(ElementPlus)
-app.use(Toast, toastOptions)
+app.use(pinia);
+app.use(router);
+app.use(ElementPlus);
+app.use(Toast, toastOptions);
 
 // 初始化认证状态和Socket连接
-const authStore = useAuthStore()
-const socketStore = useSocketStore()
+const authStore = useAuthStore();
+const socketStore = useSocketStore();
 
 // 应用启动时检查认证状态
-authStore.checkAuthStatus()
+authStore.checkAuthStatus();
 
 // 如果用户已登录，初始化Socket连接
 if (authStore.isAuthenticated) {
-  socketStore.initializeSocket()
+  socketStore.initializeSocket();
 }
 
-app.mount('#app')
+app.mount("#app");

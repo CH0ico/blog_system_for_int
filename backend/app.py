@@ -7,7 +7,7 @@ Flask后端主应用
 
 import os
 import sys
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from functools import wraps
 import json
 import logging
@@ -50,6 +50,7 @@ app.config['JWT_REFRESH_TOKEN_EXPIRES'] = timedelta(days=30)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///blog.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = os.path.join(app.instance_path, 'uploads')
+app.config['PORT'] = int(os.environ.get('PORT', '5001'))
 
 # CORS配置
 app.config['CORS_ORIGINS'] = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000').split(',')
@@ -159,7 +160,7 @@ def handle_exception(e):
 # 请求前处理
 @app.before_request
 def before_request():
-    g.start_time = datetime.utcnow()
+    g.start_time = datetime.now(timezone.utc)
     
     # 记录请求日志
     logger.info(f"Request: {request.method} {request.path} from {request.remote_addr}")
@@ -168,7 +169,7 @@ def before_request():
 def after_request(response):
     # 计算响应时间
     if hasattr(g, 'start_time'):
-        duration = datetime.utcnow() - g.start_time
+        duration = datetime.now(timezone.utc) - g.start_time
         response.headers['X-Response-Time'] = f"{duration.total_seconds():.3f}s"
     
     return response
@@ -420,7 +421,7 @@ def create_post():
     )
     
     if status == 'published':
-        post.published_at = datetime.utcnow()
+        post.published_at = datetime.now(timezone.utc)
     
 
     db.session.add(post)
@@ -511,11 +512,11 @@ def update_post(post_id):
         if new_status in ['draft', 'published', 'archived']:
             post.status = new_status
             if new_status == 'published' and not post.published_at:
-                post.published_at = datetime.utcnow()
+                post.published_at = datetime.now(timezone.utc)
         else:
             return jsonify({'message': '文章状态无效', 'error': 'invalid_status'}), 400
     
-    post.updated_at = datetime.utcnow()
+    post.updated_at = datetime.now(timezone.utc)
     db.session.commit()
     
     return jsonify({
@@ -981,34 +982,30 @@ def create_sample_data():
                 summary=post_data['content'][:100],
                 author_id=user1.id,
                 status='published',
-                published_at=datetime.utcnow()
+                published_at=datetime.now(timezone.utc)
             )
+            db.session.add(post)
             
-            # 添加标签
             for tag_name in post_data['tags']:
                 tag = Tag.query.filter_by(name=tag_name).first()
                 if tag:
                     post.tags.append(tag)
             
-            # 添加分类
             for category_name in post_data['categories']:
                 category = Category.query.filter_by(name=category_name).first()
                 if category:
                     post.categories.append(category)
-            
-            db.session.add(post)
         
         db.session.commit()
 
 # 运行应用
 if __name__ == '__main__':
+    if len(sys.argv) > 1 and sys.argv[1] == 'init-db':
+        with app.app_context():
+            init_db()
+        sys.exit(0)
     with app.app_context():
-        # 确保数据库存在
         db.create_all()
         os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-        
-        # 创建示例数据（如果没有的话）
         create_sample_data()
-    
-    # 启动SocketIO服务器
-    socketio.run(app, host='0.0.0.0', port=5000, debug=True)
+    socketio.run(app, host='0.0.0.0', port=app.config['PORT'], debug=True)

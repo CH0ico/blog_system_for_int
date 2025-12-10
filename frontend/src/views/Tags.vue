@@ -5,11 +5,11 @@
         <h1>标签云</h1>
         <p>通过标签发现感兴趣的内容</p>
       </div>
-      
+
       <div v-if="loading" class="loading-state">
         <el-loading :loading="true" text="加载中..." />
       </div>
-      
+
       <div v-else-if="tags.length > 0" class="tags-container">
         <div class="tag-cloud">
           <div
@@ -23,7 +23,7 @@
             <span class="tag-count">({{ tag.post_count }})</span>
           </div>
         </div>
-        
+
         <!-- 热门标签 -->
         <div class="popular-tags">
           <h3>热门标签</h3>
@@ -48,7 +48,7 @@
           </div>
         </div>
       </div>
-      
+
       <div v-else class="empty-state">
         <el-empty description="暂无标签" />
       </div>
@@ -57,53 +57,56 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { CollectionTag, ArrowRight } from '@element-plus/icons-vue'
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { CollectionTag, ArrowRight } from "@element-plus/icons-vue";
 
-const router = useRouter()
+const router = useRouter();
 
-const loading = ref(false)
-const tags = ref([])
+const loading = ref(false);
+const tags = ref([]);
 
 const popularTags = computed(() => {
   return [...tags.value]
     .sort((a, b) => b.post_count - a.post_count)
-    .slice(0, 6)
-})
+    .slice(0, 6);
+});
 
 const getTagSize = (postCount) => {
-  const minSize = 12
-  const maxSize = 24
+  const minSize = 12;
+  const maxSize = 24;
   // 确保tags存在且有数据
-  const validTags = tags.value || []
-  if (validTags.length === 0) return minSize
-  
-  const maxCount = Math.max(...validTags.map(t => t.post_count || 0), 1)
-  const ratio = postCount / maxCount
-  return Math.max(minSize, Math.min(maxSize, minSize + (maxSize - minSize) * ratio))
-}
+  const validTags = tags.value || [];
+  if (validTags.length === 0) return minSize;
+
+  const maxCount = Math.max(...validTags.map((t) => t.post_count || 0), 1);
+  const ratio = postCount / maxCount;
+  return Math.max(
+    minSize,
+    Math.min(maxSize, minSize + (maxSize - minSize) * ratio),
+  );
+};
 
 const goToTag = (slug) => {
-  router.push(`/tags/${slug}`)
-}
+  router.push(`/tags/${slug}`);
+};
 
 const fetchTags = async () => {
-  loading.value = true
+  loading.value = true;
   try {
-    const response = await fetch('/api/posts/tags')
-    const data = await response.json()
-    tags.value = data.tags || []
+    const response = await fetch("/api/posts/tags");
+    const data = await response.json();
+    tags.value = data.tags || [];
   } catch (error) {
-    console.error('Failed to fetch tags:', error)
+    console.error("Failed to fetch tags:", error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 onMounted(() => {
-  fetchTags()
-})
+  fetchTags();
+});
 </script>
 
 <style scoped>
@@ -270,11 +273,11 @@ onMounted(() => {
   .tag-cloud {
     padding: 20px;
   }
-  
+
   .popular-tags-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .page-header h1 {
     font-size: 2rem;
   }
@@ -284,11 +287,11 @@ onMounted(() => {
   .page-header h1 {
     font-size: 1.8rem;
   }
-  
+
   .tag-item {
     padding: 6px 12px;
   }
-  
+
   .popular-tag-card {
     padding: 16px;
   }

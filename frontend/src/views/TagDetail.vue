@@ -1,11 +1,13 @@
 <template>
-  <div class="tag-detail" v-loading="loading">
+  <div v-loading="loading" class="tag-detail">
     <div class="container">
       <div class="page-header">
         <div>
           <p class="breadcrumb">标签</p>
           <h1>#{{ tagInfo?.name || route.params.slug }}</h1>
-          <p class="description">{{ tagInfo?.description || '与该标签相关的文章' }}</p>
+          <p class="description">
+            {{ tagInfo?.description || "与该标签相关的文章" }}
+          </p>
         </div>
         <el-tag type="info">{{ postsStore.pagination.total }} 篇文章</el-tag>
       </div>
@@ -19,44 +21,44 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import PostItem from '@/components/posts/PostItem.vue'
-import { usePostsStore } from '@/stores/posts'
+import { ref, computed, onMounted, watch } from "vue";
+import { useRoute } from "vue-router";
+import PostItem from "@/components/posts/PostItem.vue";
+import { usePostsStore } from "@/stores/posts";
 
-const route = useRoute()
-const postsStore = usePostsStore()
-const loading = ref(false)
-const tagInfo = ref(null)
-const posts = computed(() => postsStore.posts)
+const route = useRoute();
+const postsStore = usePostsStore();
+const loading = ref(false);
+const tagInfo = ref(null);
+const posts = computed(() => postsStore.posts);
 
 const fetchTagInfo = async () => {
-  const res = await fetch('/api/posts/tags')
-  const data = await res.json()
-  tagInfo.value = (data.tags || []).find((t) => t.slug === route.params.slug)
-}
+  const res = await fetch("/api/posts/tags");
+  const data = await res.json();
+  tagInfo.value = (data.tags || []).find((t) => t.slug === route.params.slug);
+};
 
 const fetchPosts = async () => {
-  loading.value = true
+  loading.value = true;
   try {
-    await postsStore.fetchPosts({ tag: route.params.slug, per_page: 20 })
+    await postsStore.fetchPosts({ tag: route.params.slug, per_page: 20 });
   } catch (error) {
-    console.error('加载标签文章失败', error)
+    console.error("加载标签文章失败", error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const loadData = async () => {
-  await Promise.all([fetchTagInfo(), fetchPosts()])
-}
+  await Promise.all([fetchTagInfo(), fetchPosts()]);
+};
 
-onMounted(loadData)
+onMounted(loadData);
 
 watch(
   () => route.params.slug,
-  () => loadData()
-)
+  () => loadData(),
+);
 </script>
 
 <style scoped>

@@ -8,7 +8,7 @@
 from flask import Blueprint, request, jsonify, g
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from sqlalchemy import or_, and_
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from models import db, Post, Tag, Category, User, Like, Favorite, Comment
 from utils.validators import (
@@ -335,7 +335,7 @@ def update_post(post_id):
         
         post.status = new_status
         if new_status == 'published' and not post.published_at:
-            post.published_at = datetime.utcnow()
+            post.published_at = datetime.now(timezone.utc)
     
     if 'is_featured' in data:
         post.is_featured = bool(data['is_featured'])
@@ -379,7 +379,7 @@ def update_post(post_id):
                 db.session.add(category)
             post.categories.append(category)
     
-    post.updated_at = datetime.utcnow()
+    post.updated_at = datetime.now(timezone.utc)
     db.session.commit()
     
     return jsonify({

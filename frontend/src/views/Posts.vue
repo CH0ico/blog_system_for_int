@@ -6,7 +6,10 @@
         <h1>文章列表</h1>
         <div class="header-actions">
           <el-button
-            v-if="authStore.isAuthenticated && authStore.hasPermission('create_posts')"
+            v-if="
+              authStore.isAuthenticated &&
+              authStore.hasPermission('create_posts')
+            "
             type="primary"
             @click="$router.push('/write')"
           >
@@ -15,7 +18,7 @@
           </el-button>
         </div>
       </div>
-      
+
       <!-- 搜索和筛选 -->
       <div class="filter-section">
         <div class="search-box">
@@ -30,7 +33,7 @@
             </template>
           </el-input>
         </div>
-        
+
         <div class="filter-tabs">
           <el-tabs v-model="activeTab" @tab-change="handleTabChange">
             <el-tab-pane label="最新" name="latest" />
@@ -38,7 +41,7 @@
             <el-tab-pane label="推荐" name="featured" />
           </el-tabs>
         </div>
-        
+
         <div class="filter-options">
           <el-select
             v-model="selectedTag"
@@ -53,7 +56,7 @@
               :value="tag.slug"
             />
           </el-select>
-          
+
           <el-select
             v-model="selectedCategory"
             placeholder="选择分类"
@@ -69,26 +72,22 @@
           </el-select>
         </div>
       </div>
-      
+
       <!-- 文章列表 -->
       <div class="posts-container">
         <div v-if="loading" class="loading-skeleton">
           <PostSkeleton v-for="i in 6" :key="i" />
         </div>
-        
+
         <div v-else-if="posts.length > 0" class="posts-list">
-          <PostItem
-            v-for="post in posts"
-            :key="post.id"
-            :post="post"
-          />
+          <PostItem v-for="post in posts" :key="post.id" :post="post" />
         </div>
-        
+
         <div v-else class="empty-state">
           <el-empty description="暂无文章" />
         </div>
       </div>
-      
+
       <!-- 分页 -->
       <div v-if="totalPages > 1" class="pagination">
         <el-pagination
@@ -106,180 +105,180 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { EditPen, Search } from '@element-plus/icons-vue'
-import { useAuthStore } from '@/stores/auth'
-import { usePostsStore } from '@/stores/posts'
-import PostItem from '@/components/posts/PostItem.vue'
-import PostSkeleton from '@/components/posts/PostSkeleton.vue'
+import { ref, computed, onMounted, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { EditPen, Search } from "@element-plus/icons-vue";
+import { useAuthStore } from "@/stores/auth";
+import { usePostsStore } from "@/stores/posts";
+import PostItem from "@/components/posts/PostItem.vue";
+import PostSkeleton from "@/components/posts/PostSkeleton.vue";
 
-const route = useRoute()
-const router = useRouter()
-const authStore = useAuthStore()
-const postsStore = usePostsStore()
+const route = useRoute();
+const router = useRouter();
+const authStore = useAuthStore();
+const postsStore = usePostsStore();
 
 // 状态
-const loading = ref(false)
-const searchQuery = ref('')
-const activeTab = ref('latest')
-const selectedTag = ref('')
-const selectedCategory = ref('')
-const tags = ref([])
-const categories = ref([])
+const loading = ref(false);
+const searchQuery = ref("");
+const activeTab = ref("latest");
+const selectedTag = ref("");
+const selectedCategory = ref("");
+const tags = ref([]);
+const categories = ref([]);
 
 // 计算属性
-const posts = computed(() => postsStore.posts)
+const posts = computed(() => postsStore.posts);
 const currentPage = computed({
   get: () => postsStore.pagination.page,
   set: (val) => {
-    handleCurrentChange(val)
-  }
-})
+    handleCurrentChange(val);
+  },
+});
 const pageSize = computed({
   get: () => postsStore.pagination.per_page,
   set: (val) => {
-    handleSizeChange(val)
-  }
-})
-const totalPosts = computed(() => postsStore.pagination.total)
-const totalPages = computed(() => postsStore.pagination.pages)
+    handleSizeChange(val);
+  },
+});
+const totalPosts = computed(() => postsStore.pagination.total);
+const totalPages = computed(() => postsStore.pagination.pages);
 
 // 获取文章列表
 const fetchPosts = async (params = {}) => {
-  loading.value = true
+  loading.value = true;
   try {
-    await postsStore.fetchPosts(params)
+    await postsStore.fetchPosts(params);
   } catch (error) {
-    console.error('Failed to fetch posts:', error)
+    console.error("Failed to fetch posts:", error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 // 获取标签和分类
 const fetchTagsAndCategories = async () => {
   try {
     const [tagsResponse, categoriesResponse] = await Promise.all([
-      fetch('/api/posts/tags'),
-      fetch('/api/posts/categories')
-    ])
-    
-    tags.value = (await tagsResponse.json()).tags || []
-    categories.value = (await categoriesResponse.json()).categories || []
+      fetch("/api/posts/tags"),
+      fetch("/api/posts/categories"),
+    ]);
+
+    tags.value = (await tagsResponse.json()).tags || [];
+    categories.value = (await categoriesResponse.json()).categories || [];
   } catch (error) {
-    console.error('Failed to fetch tags and categories:', error)
+    console.error("Failed to fetch tags and categories:", error);
   }
-}
+};
 
 // 处理搜索
 const handleSearch = () => {
   const query = {
     ...route.query,
-    page: 1
-  }
-  
+    page: 1,
+  };
+
   if (searchQuery.value.trim()) {
-    query.search = searchQuery.value.trim()
+    query.search = searchQuery.value.trim();
   } else {
-    delete query.search
+    delete query.search;
   }
-  
-  router.push({ query })
-}
+
+  router.push({ query });
+};
 
 // 处理标签筛选
 const handleTagFilter = () => {
   const query = {
     ...route.query,
-    page: 1
-  }
-  
+    page: 1,
+  };
+
   if (selectedTag.value) {
-    query.tag = selectedTag.value
+    query.tag = selectedTag.value;
   } else {
-    delete query.tag
+    delete query.tag;
   }
-  
-  router.push({ query })
-}
+
+  router.push({ query });
+};
 
 // 处理分类筛选
 const handleCategoryFilter = () => {
   const query = {
     ...route.query,
-    page: 1
-  }
-  
+    page: 1,
+  };
+
   if (selectedCategory.value) {
-    query.category = selectedCategory.value
+    query.category = selectedCategory.value;
   } else {
-    delete query.category
+    delete query.category;
   }
-  
-  router.push({ query })
-}
+
+  router.push({ query });
+};
 
 // 处理标签页切换
 const handleTabChange = (tab) => {
-  const query = { ...route.query }
-  
+  const query = { ...route.query };
+
   switch (tab) {
-    case 'latest':
-      delete query.sort_by
-      delete query.order
-      break
-    case 'popular':
-      query.sort_by = 'view_count'
-      query.order = 'desc'
-      break
-    case 'featured':
+    case "latest":
+      delete query.sort_by;
+      delete query.order;
+      break;
+    case "popular":
+      query.sort_by = "view_count";
+      query.order = "desc";
+      break;
+    case "featured":
       // 推荐文章需要特殊处理
-      fetchFeaturedPosts()
-      return
+      fetchFeaturedPosts();
+      return;
   }
-  
-  router.push({ query })
-}
+
+  router.push({ query });
+};
 
 // 处理分页大小变化
 const handleSizeChange = (size) => {
   const query = {
     ...route.query,
     per_page: size,
-    page: 1
-  }
-  router.push({ query })
-}
+    page: 1,
+  };
+  router.push({ query });
+};
 
 // 处理页码变化
 const handleCurrentChange = (page) => {
   const query = {
     ...route.query,
-    page
-  }
-  router.push({ query })
-}
+    page,
+  };
+  router.push({ query });
+};
 
 // 获取推荐文章
 const fetchFeaturedPosts = async () => {
-  loading.value = true
+  loading.value = true;
   try {
-    await postsStore.clearPosts()
-    const posts = await postsStore.fetchFeaturedPosts({ limit: 20 })
-    postsStore.posts = posts
+    await postsStore.clearPosts();
+    const posts = await postsStore.fetchFeaturedPosts({ limit: 20 });
+    postsStore.posts = posts;
     postsStore.pagination = {
       page: 1,
       per_page: 20,
       total: posts.length,
-      pages: 1
-    }
+      pages: 1,
+    };
   } catch (error) {
-    console.error('Failed to fetch featured posts:', error)
+    console.error("Failed to fetch featured posts:", error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 // 监听路由变化
 watch(
@@ -288,36 +287,36 @@ watch(
     const params = {
       page: parseInt(newQuery.page) || 1,
       per_page: parseInt(newQuery.per_page) || 10,
-      search: newQuery.search || '',
-      tag: newQuery.tag || '',
-      category: newQuery.category || '',
-      sort_by: newQuery.sort_by || '',
-      order: newQuery.order || ''
-    }
-    
+      search: newQuery.search || "",
+      tag: newQuery.tag || "",
+      category: newQuery.category || "",
+      sort_by: newQuery.sort_by || "",
+      order: newQuery.order || "",
+    };
+
     // 更新筛选状态
-    searchQuery.value = params.search
-    selectedTag.value = params.tag
-    selectedCategory.value = params.category
-    
+    searchQuery.value = params.search;
+    selectedTag.value = params.tag;
+    selectedCategory.value = params.category;
+
     // 更新标签页状态
-    if (params.sort_by === 'view_count') {
-      activeTab.value = 'popular'
+    if (params.sort_by === "view_count") {
+      activeTab.value = "popular";
     } else {
-      activeTab.value = 'latest'
+      activeTab.value = "latest";
     }
-    
+
     // 获取文章列表
-    if (activeTab.value !== 'featured') {
-      fetchPosts(params)
+    if (activeTab.value !== "featured") {
+      fetchPosts(params);
     }
   },
-  { immediate: true }
-)
+  { immediate: true },
+);
 
 onMounted(async () => {
-  await fetchTagsAndCategories()
-})
+  await fetchTagsAndCategories();
+});
 </script>
 
 <style scoped>
@@ -408,15 +407,15 @@ onMounted(async () => {
     align-items: flex-start;
     gap: 16px;
   }
-  
+
   .page-header h1 {
     font-size: 1.5rem;
   }
-  
+
   .filter-options {
     flex-direction: column;
   }
-  
+
   .filter-options .el-select {
     width: 100%;
   }
@@ -426,7 +425,7 @@ onMounted(async () => {
   .container {
     padding: 0 16px;
   }
-  
+
   .filter-section {
     padding: 16px;
   }

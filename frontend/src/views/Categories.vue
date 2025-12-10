@@ -5,11 +5,11 @@
         <h1>文章分类</h1>
         <p>按分类浏览文章</p>
       </div>
-      
+
       <div v-if="loading" class="loading-state">
         <el-loading :loading="true" text="加载中..." />
       </div>
-      
+
       <div v-else-if="categories.length > 0" class="categories-container">
         <div class="categories-grid">
           <div
@@ -23,7 +23,7 @@
             </div>
             <div class="category-info">
               <h3>{{ category.name }}</h3>
-              <p>{{ category.description || '暂无描述' }}</p>
+              <p>{{ category.description || "暂无描述" }}</p>
             </div>
             <div class="category-stats">
               <div class="stat-item">
@@ -40,7 +40,7 @@
             </div>
           </div>
         </div>
-        
+
         <!-- 分类统计 -->
         <div class="categories-stats">
           <div class="stats-card">
@@ -77,7 +77,7 @@
           </div>
         </div>
       </div>
-      
+
       <div v-else class="empty-state">
         <el-empty description="暂无分类" />
       </div>
@@ -86,43 +86,49 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { Folder, ArrowRight, Document, View } from '@element-plus/icons-vue'
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { Folder, ArrowRight, Document, View } from "@element-plus/icons-vue";
 
-const router = useRouter()
+const router = useRouter();
 
-const loading = ref(false)
-const categories = ref([])
+const loading = ref(false);
+const categories = ref([]);
 
 const totalPosts = computed(() => {
-  return (categories.value || []).reduce((sum, category) => sum + (category.post_count || 0), 0)
-})
+  return (categories.value || []).reduce(
+    (sum, category) => sum + (category.post_count || 0),
+    0,
+  );
+});
 
 const totalViews = computed(() => {
-  return (categories.value || []).reduce((sum, category) => sum + (category.view_count || 0), 0)
-})
+  return (categories.value || []).reduce(
+    (sum, category) => sum + (category.view_count || 0),
+    0,
+  );
+});
 
 const goToCategory = (slug) => {
-  router.push(`/categories/${slug}`)
-}
+  router.push(`/categories/${slug}`);
+};
 
 const fetchCategories = async () => {
-  loading.value = true
+  loading.value = true;
   try {
-    const response = await fetch('/api/posts/categories')
-    const data = await response.json()
-    categories.value = data.categories || []
+    const response = await fetch("/api/posts/categories");
+    const data = await response.json();
+    categories.value = data.categories || [];
   } catch (error) {
-    console.error('Failed to fetch categories:', error)
+    console.error("Failed to fetch categories:", error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 onMounted(() => {
-  fetchCategories()
-})
+  fetchCategories();
+});
 </script>
 
 <style scoped>
@@ -331,20 +337,20 @@ onMounted(() => {
   .categories-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .category-card {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .category-stats {
     justify-content: center;
   }
-  
+
   .stats-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .page-header h1 {
     font-size: 2rem;
   }
@@ -354,17 +360,17 @@ onMounted(() => {
   .page-header h1 {
     font-size: 1.8rem;
   }
-  
+
   .category-card {
     padding: 20px;
   }
-  
+
   .category-icon {
     width: 48px;
     height: 48px;
     font-size: 20px;
   }
-  
+
   .stats-card {
     padding: 24px;
   }

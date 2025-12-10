@@ -6,9 +6,12 @@
         <!-- 关于网站 -->
         <div class="footer-section">
           <h4>关于博客</h4>
-          <p>一个现代化的博客系统，采用Vue.js + Flask技术栈构建，支持实时通信、社交互动等功能。</p>
+          <p>
+            一个现代化的博客系统，采用Vue.js +
+            Flask技术栈构建，支持实时通信、社交互动等功能。
+          </p>
         </div>
-        
+
         <!-- 快速链接 -->
         <div class="footer-section">
           <h4>快速链接</h4>
@@ -21,7 +24,7 @@
             <li><router-link to="/about">关于</router-link></li>
           </ul>
         </div>
-        
+
         <!-- 技术栈 -->
         <div class="footer-section">
           <h4>技术栈</h4>
@@ -34,26 +37,30 @@
             <el-tag>SQLite/MySQL</el-tag>
           </div>
         </div>
-        
+
         <!-- 联系信息 -->
         <div class="footer-section">
           <h4>联系我们</h4>
           <div class="contact-info">
-            <p><el-icon><Message /></el-icon> contact@blog.com</p>
-            <p><el-icon><Link /></el-icon> https://blog.example.com</p>
+            <p>
+              <el-icon><Message /></el-icon> contact@blog.com
+            </p>
+            <p>
+              <el-icon><Link /></el-icon> https://blog.example.com
+            </p>
           </div>
         </div>
       </div>
-      
+
       <!-- 版权信息 -->
       <div class="footer-bottom">
         <div class="copyright">
           <p>&copy; {{ currentYear }} 博客系统. All rights reserved.</p>
           <p>Powered by Vue.js & Flask</p>
         </div>
-        
+
         <!-- 统计信息 -->
-        <div class="stats" v-if="stats.totalPosts > 0">
+        <div v-if="stats.totalPosts > 0" class="stats">
           <span>文章总数: {{ stats.totalPosts }}</span>
           <span>运行天数: {{ stats.runningDays }}</span>
           <span v-if="onlineCount > 0">在线用户: {{ onlineCount }}</span>
@@ -64,47 +71,53 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { 
-  Message, Link, User, Document, CollectionTag,
-  Calendar, Folder, PriceTag
-} from '@element-plus/icons-vue'
-import { usePostsStore } from '@/stores/posts'
-import { useSocketStore } from '@/stores/socket'
+import { ref, computed, onMounted } from "vue";
+import {
+  Message,
+  Link,
+  User,
+  Document,
+  CollectionTag,
+  Calendar,
+  Folder,
+  PriceTag,
+} from "@element-plus/icons-vue";
+import { usePostsStore } from "@/stores/posts";
+import { useSocketStore } from "@/stores/socket";
 
-const postsStore = usePostsStore()
-const socketStore = useSocketStore()
+const postsStore = usePostsStore();
+const socketStore = useSocketStore();
 
 // 状态
 const stats = ref({
   totalPosts: 0,
-  runningDays: 0
-})
+  runningDays: 0,
+});
 
 // 计算属性
-const currentYear = computed(() => new Date().getFullYear())
-const onlineCount = computed(() => socketStore.onlineCount)
+const currentYear = computed(() => new Date().getFullYear());
+const onlineCount = computed(() => socketStore.onlineCount);
 
 // 获取统计信息
 const fetchStats = async () => {
   try {
     // 获取文章总数
-    await postsStore.fetchPosts({ per_page: 1 })
-    stats.value.totalPosts = postsStore.pagination.total
-    
+    await postsStore.fetchPosts({ per_page: 1 });
+    stats.value.totalPosts = postsStore.pagination.total;
+
     // 计算运行天数（假设从2024年1月1日开始）
-    const startDate = new Date('2024-01-01')
-    const now = new Date()
-    const diffTime = Math.abs(now - startDate)
-    stats.value.runningDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    const startDate = new Date("2024-01-01");
+    const now = new Date();
+    const diffTime = Math.abs(now - startDate);
+    stats.value.runningDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   } catch (error) {
-    console.error('Failed to fetch stats:', error)
+    console.error("Failed to fetch stats:", error);
   }
-}
+};
 
 onMounted(() => {
-  fetchStats()
-})
+  fetchStats();
+});
 </script>
 
 <style scoped>
@@ -209,12 +222,12 @@ onMounted(() => {
     grid-template-columns: 1fr;
     gap: 20px;
   }
-  
+
   .footer-bottom {
     flex-direction: column;
     text-align: center;
   }
-  
+
   .stats {
     justify-content: center;
     flex-wrap: wrap;
@@ -225,27 +238,27 @@ onMounted(() => {
   .app-footer {
     padding: 20px 0 10px;
   }
-  
+
   .footer-container {
     padding: 0 16px;
   }
-  
+
   .footer-content {
     gap: 16px;
   }
-  
+
   .footer-section h4 {
     font-size: 14px;
   }
-  
+
   .footer-section p {
     font-size: 12px;
   }
-  
+
   .copyright {
     font-size: 12px;
   }
-  
+
   .stats {
     font-size: 12px;
     gap: 8px;

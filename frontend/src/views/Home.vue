@@ -1,28 +1,35 @@
 <template>
   <div class="home-page">
     <!-- 英雄区域 -->
-    <section class="hero-section" v-if="!authStore.isAuthenticated">
+    <section v-if="!authStore.isAuthenticated" class="hero-section">
       <div class="hero-content">
         <h1 class="hero-title">欢迎来到博客系统</h1>
         <p class="hero-subtitle">分享你的想法，连接更多可能</p>
         <div class="hero-actions">
-          <el-button type="primary" size="large" @click="$router.push('/register')">
-            开始写作
-          </el-button>
-          <el-button size="large" @click="$router.push('/posts')">
-            浏览文章
-          </el-button>
+          <el-button
+            type="primary"
+            size="large"
+            class="hero-primary"
+            @click="$router.push('/register')"
+            >开始写作</el-button
+          >
+          <el-button
+            size="large"
+            class="hero-secondary"
+            @click="$router.push('/posts')"
+            >浏览文章</el-button
+          >
         </div>
       </div>
     </section>
-    
+
     <!-- 主要内容区域 -->
     <div class="main-container">
       <div class="content-wrapper">
         <!-- 左侧内容 -->
         <div class="main-content">
           <!-- 推荐文章 -->
-          <section class="featured-posts" v-if="featuredPosts.length > 0">
+          <section v-if="featuredPosts.length > 0" class="featured-posts">
             <div class="section-header">
               <h2>推荐文章</h2>
               <router-link to="/posts" class="more-link">查看更多</router-link>
@@ -36,7 +43,7 @@
               />
             </div>
           </section>
-          
+
           <!-- 最新文章 -->
           <section class="latest-posts">
             <div class="section-header">
@@ -50,24 +57,21 @@
                 :post="post"
               />
             </div>
-            
+
             <!-- 加载更多 -->
             <div v-if="hasMorePosts" class="load-more">
-              <el-button
-                :loading="loading"
-                @click="loadMorePosts"
-              >
+              <el-button :loading="loading" @click="loadMorePosts">
                 加载更多
               </el-button>
             </div>
           </section>
         </div>
-        
+
         <!-- 右侧边栏 -->
         <aside class="sidebar">
           <!-- 用户信息卡片 -->
           <UserCard v-if="authStore.isAuthenticated" />
-          
+
           <!-- 热门文章 -->
           <section class="sidebar-section">
             <h3>热门文章</h3>
@@ -83,23 +87,23 @@
               </div>
             </div>
           </section>
-          
+
           <!-- 标签云 -->
-          <section class="sidebar-section" v-if="tags.length > 0">
+          <section v-if="tags.length > 0" class="sidebar-section">
             <h3>标签云</h3>
             <div class="tag-cloud">
               <el-tag
                 v-for="tag in tags"
                 :key="tag.id"
                 :style="{ fontSize: getTagSize(tag.post_count) + 'px' }"
-                @click="$router.push(`/tags/${tag.slug}`)"
                 class="tag-item"
+                @click="$router.push(`/tags/${tag.slug}`)"
               >
                 {{ tag.name }}
               </el-tag>
             </div>
           </section>
-          
+
           <!-- 统计信息 -->
           <section class="sidebar-section">
             <h3>网站统计</h3>
@@ -116,7 +120,7 @@
                 <span class="stat-label">运行天数</span>
                 <span class="stat-value">{{ stats.runningDays }}</span>
               </div>
-              <div class="stat-item" v-if="onlineCount > 0">
+              <div v-if="onlineCount > 0" class="stat-item">
                 <span class="stat-label">在线用户</span>
                 <span class="stat-value">{{ onlineCount }}</span>
               </div>
@@ -129,129 +133,135 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useAuthStore } from '@/stores/auth'
-import { usePostsStore } from '@/stores/posts'
-import { useSocketStore } from '@/stores/socket'
-import PostCard from '@/components/posts/PostCard.vue'
-import PostItem from '@/components/posts/PostItem.vue'
-import UserCard from '@/components/user/UserCard.vue'
+import { ref, computed, onMounted } from "vue";
+import { useAuthStore } from "@/stores/auth";
+import { usePostsStore } from "@/stores/posts";
+import { useSocketStore } from "@/stores/socket";
+import PostCard from "@/components/posts/PostCard.vue";
+import PostItem from "@/components/posts/PostItem.vue";
+import UserCard from "@/components/user/UserCard.vue";
 
-const authStore = useAuthStore()
-const postsStore = usePostsStore()
-const socketStore = useSocketStore()
+const authStore = useAuthStore();
+const postsStore = usePostsStore();
+const socketStore = useSocketStore();
 
 // 状态
-const loading = ref(false)
-const featuredPosts = ref([])
-const hotPosts = ref([])
-const tags = ref([])
+const loading = ref(false);
+const featuredPosts = ref([]);
+const hotPosts = ref([]);
+const tags = ref([]);
 const stats = ref({
   totalPosts: 0,
   totalTags: 0,
-  runningDays: 0
-})
+  runningDays: 0,
+});
 
 // 计算属性
-const latestPosts = computed(() => postsStore.posts)
-const hasMorePosts = computed(() => postsStore.hasMorePosts)
-const onlineCount = computed(() => socketStore.onlineCount)
+const latestPosts = computed(() => postsStore.posts);
+const hasMorePosts = computed(() => postsStore.hasMorePosts);
+const onlineCount = computed(() => socketStore.onlineCount);
 
 // 获取推荐文章
 const fetchFeaturedPosts = async () => {
   try {
-    const posts = await postsStore.fetchFeaturedPosts({ limit: 3 })
-    featuredPosts.value = posts
+    const posts = await postsStore.fetchFeaturedPosts({ limit: 3 });
+    featuredPosts.value = posts;
   } catch (error) {
-    console.error('Failed to fetch featured posts:', error)
+    console.error("Failed to fetch featured posts:", error);
   }
-}
+};
 
 // 获取热门文章
 const fetchHotPosts = async () => {
   try {
-    const posts = await postsStore.fetchPopularPosts({ limit: 5, period: 'week' })
-    hotPosts.value = posts
+    const posts = await postsStore.fetchPopularPosts({
+      limit: 5,
+      period: "week",
+    });
+    hotPosts.value = posts;
   } catch (error) {
-    console.error('Failed to fetch hot posts:', error)
+    console.error("Failed to fetch hot posts:", error);
   }
-}
+};
 
 // 获取标签
 const fetchTags = async () => {
   try {
-    const response = await fetch('/api/posts/tags')
-    const data = await response.json()
-    tags.value = data.tags || []
+    const response = await fetch("/api/posts/tags");
+    const data = await response.json();
+    tags.value = data.tags || [];
   } catch (error) {
-    console.error('Failed to fetch tags:', error)
+    console.error("Failed to fetch tags:", error);
   }
-}
+};
 
 // 计算标签大小
 const getTagSize = (postCount) => {
-  const minSize = 12
-  const maxSize = 20
+  const minSize = 12;
+  const maxSize = 20;
   // 确保tags存在且有数据
-  const validTags = tags.value || []
-  if (validTags.length === 0) return minSize
-  
-  const maxCount = Math.max(...validTags.map(t => t.post_count || 0), 1)
-  const ratio = postCount / maxCount
-  return Math.max(minSize, Math.min(maxSize, minSize + (maxSize - minSize) * ratio))
-}
+  const validTags = tags.value || [];
+  if (validTags.length === 0) return minSize;
+
+  const maxCount = Math.max(...validTags.map((t) => t.post_count || 0), 1);
+  const ratio = postCount / maxCount;
+  return Math.max(
+    minSize,
+    Math.min(maxSize, minSize + (maxSize - minSize) * ratio),
+  );
+};
 
 // 加载更多文章
 const loadMorePosts = async () => {
-  if (loading.value || !hasMorePosts.value) return
-  
-  loading.value = true
+  if (loading.value || !hasMorePosts.value) return;
+
+  loading.value = true;
   try {
-    await postsStore.loadMorePosts()
+    await postsStore.loadMorePosts();
   } catch (error) {
-    console.error('Failed to load more posts:', error)
+    console.error("Failed to load more posts:", error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 // 获取统计信息
 const fetchStats = async () => {
   try {
     // 获取文章总数
-    await postsStore.fetchPosts({ per_page: 1 })
-    stats.value.totalPosts = postsStore.pagination.total
-    
+    await postsStore.fetchPosts({ per_page: 1 });
+    stats.value.totalPosts = postsStore.pagination.total;
+
     // 获取标签数量 - 确保tags已经加载
-    stats.value.totalTags = (tags.value || []).length
-    
+    stats.value.totalTags = (tags.value || []).length;
+
     // 计算运行天数
-    const startDate = new Date('2024-01-01')
-    const now = new Date()
-    const diffTime = Math.abs(now - startDate)
-    stats.value.runningDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    const startDate = new Date("2024-01-01");
+    const now = new Date();
+    const diffTime = Math.abs(now - startDate);
+    stats.value.runningDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
   } catch (error) {
-    console.error('Failed to fetch stats:', error)
+    console.error("Failed to fetch stats:", error);
   }
-}
+};
 
 onMounted(async () => {
   // 获取最新文章
-  await postsStore.fetchPosts()
-  
+  await postsStore.fetchPosts();
+
   // 并行获取其他数据
   await Promise.all([
     fetchFeaturedPosts(),
     fetchHotPosts(),
     fetchTags(),
-    fetchStats()
-  ])
-  
+    fetchStats(),
+  ]);
+
   // 初始化Socket连接
   if (authStore.isAuthenticated) {
-    socketStore.initializeSocket()
+    socketStore.initializeSocket();
   }
-})
+});
 </script>
 
 <style scoped>
@@ -261,9 +271,25 @@ onMounted(async () => {
 
 /* 英雄区域 */
 .hero-section {
-  background: linear-gradient(135deg, var(--el-color-primary) 0%, var(--el-color-primary-light-3) 100%);
+  position: relative;
+  background:
+    radial-gradient(
+      1200px 600px at 20% 0%,
+      var(--el-color-primary-light-5) 0%,
+      transparent 60%
+    ),
+    radial-gradient(
+      1000px 500px at 80% 0%,
+      var(--el-color-primary-light-3) 0%,
+      transparent 60%
+    ),
+    linear-gradient(
+      135deg,
+      var(--el-color-primary) 0%,
+      var(--el-color-primary-light-3) 100%
+    );
   color: white;
-  padding: 80px 20px;
+  padding: 100px 20px;
   text-align: center;
 }
 
@@ -273,25 +299,37 @@ onMounted(async () => {
 }
 
 .hero-title {
-  font-size: 3rem;
-  font-weight: bold;
-  margin-bottom: 1rem;
-  background: linear-gradient(45deg, #fff, #f0f0f0);
+  font-size: 3.25rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.2rem;
+  background: linear-gradient(45deg, #fff, #eaeaea);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .hero-subtitle {
-  font-size: 1.2rem;
-  margin-bottom: 2rem;
-  opacity: 0.9;
+  font-size: 1.15rem;
+  margin-bottom: 2.2rem;
+  opacity: 0.95;
 }
 
 .hero-actions {
   display: flex;
   gap: 1rem;
   justify-content: center;
+}
+.hero-primary {
+  border: none;
+  padding: 14px 22px;
+  border-radius: 10px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
+}
+.hero-secondary {
+  padding: 14px 22px;
+  border-radius: 10px;
+  backdrop-filter: blur(8px);
 }
 
 /* 主要内容区域 */
@@ -341,8 +379,8 @@ onMounted(async () => {
 /* 文章网格 */
 .posts-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 28px;
   margin-bottom: 40px;
 }
 
@@ -368,9 +406,10 @@ onMounted(async () => {
 .sidebar-section {
   background: var(--el-bg-color);
   border: 1px solid var(--el-border-color-lighter);
-  border-radius: 8px;
+  border-radius: 14px;
   padding: 20px;
   margin-bottom: 24px;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
 }
 
 .sidebar-section h3 {
@@ -400,7 +439,7 @@ onMounted(async () => {
   background-color: var(--el-fill-color-light);
   margin: 0 -20px;
   padding: 8px 20px;
-  border-radius: 4px;
+  border-radius: 8px;
 }
 
 .hot-post-item:last-child {
@@ -480,12 +519,12 @@ onMounted(async () => {
     grid-template-columns: 1fr;
     gap: 20px;
   }
-  
+
   .sidebar {
     position: static;
     order: -1;
   }
-  
+
   .sidebar-section {
     margin-bottom: 16px;
   }
@@ -495,35 +534,35 @@ onMounted(async () => {
   .hero-section {
     padding: 60px 20px;
   }
-  
+
   .hero-title {
     font-size: 2rem;
   }
-  
+
   .hero-subtitle {
     font-size: 1rem;
   }
-  
+
   .hero-actions {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .main-container {
     padding: 20px 16px;
   }
-  
+
   .posts-grid {
     grid-template-columns: 1fr;
     gap: 16px;
   }
-  
+
   .section-header {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }
-  
+
   .section-header h2 {
     font-size: 1.25rem;
   }
@@ -533,11 +572,11 @@ onMounted(async () => {
   .hero-section {
     padding: 40px 16px;
   }
-  
+
   .hero-title {
     font-size: 1.5rem;
   }
-  
+
   .main-container {
     padding: 16px;
   }

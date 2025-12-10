@@ -1,19 +1,15 @@
 <template>
   <div class="user-card">
     <div class="user-header">
-      <el-avatar
-        :src="user.avatar"
-        :size="64"
-        class="user-avatar"
-      >
+      <el-avatar :src="user.avatar" :size="64" class="user-avatar">
         {{ user.nickname?.charAt(0) || user.username?.charAt(0) }}
       </el-avatar>
       <div class="user-info">
         <h3 class="user-name">{{ user.nickname || user.username }}</h3>
-        <p class="user-bio" v-if="user.bio">{{ user.bio }}</p>
+        <p v-if="user.bio" class="user-bio">{{ user.bio }}</p>
       </div>
     </div>
-    
+
     <div class="user-stats">
       <div class="stat-item" @click="goToPosts">
         <span class="stat-value">{{ user.posts_count || 0 }}</span>
@@ -28,7 +24,7 @@
         <span class="stat-label">关注</span>
       </div>
     </div>
-    
+
     <div class="user-actions">
       <el-button size="small" @click="$router.push('/profile')">
         个人中心
@@ -41,24 +37,24 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useAuthStore } from '@/stores/auth'
+import { computed } from "vue";
+import { useAuthStore } from "@/stores/auth";
 
-const authStore = useAuthStore()
+const authStore = useAuthStore();
 
-const user = computed(() => authStore.user || {})
+const user = computed(() => authStore.user || {});
 
 const goToPosts = () => {
   // 跳转到用户的文章列表
-}
+};
 
 const goToFollowers = () => {
   // 跳转到粉丝列表
-}
+};
 
 const goToFollowing = () => {
   // 跳转到关注列表
-}
+};
 </script>
 
 <style scoped>

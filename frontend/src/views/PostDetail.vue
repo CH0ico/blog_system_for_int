@@ -1,8 +1,8 @@
 <!-- PostDetail.vue -->
 <template>
-  <div class="post-detail" v-loading="loading">
+  <div v-loading="loading" class="post-detail">
     <!-- 文章头部 -->
-    <header class="post-header" v-if="post">
+    <header v-if="post" class="post-header">
       <div class="container">
         <el-breadcrumb separator="/">
           <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
@@ -26,7 +26,9 @@
               </router-link>
               <div class="post-time">
                 <el-icon><Clock /></el-icon>
-                <span>{{ formatDate(post.published_at || post.created_at) }}</span>
+                <span>{{
+                  formatDate(post.published_at || post.created_at)
+                }}</span>
                 ·
                 <span>{{ post.view_count }} 次阅读</span>
               </div>
@@ -49,19 +51,22 @@
     </header>
 
     <!-- 文章内容 -->
-    <main class="post-body" v-if="post">
+    <main v-if="post" class="post-body">
       <div class="container">
         <div class="post-content-wrapper">
           <!-- 文章摘要 -->
-          <div class="post-summary" v-if="post.summary">
+          <div v-if="post.summary" class="post-summary">
             <el-alert :title="post.summary" type="info" :closable="false" />
           </div>
 
           <!-- 正文 -->
-          <article class="post-content article-content" v-html="postContentHtml"></article>
+          <article
+            class="post-content article-content"
+            v-html="postContentHtml"
+          ></article>
 
           <!-- 分类 -->
-          <div class="post-categories" v-if="post.categories.length">
+          <div v-if="post.categories.length" class="post-categories">
             <el-icon><Folder /></el-icon>
             <span
               v-for="cat in post.categories"
@@ -74,11 +79,7 @@
 
           <!-- 版权声明 -->
           <div class="post-license">
-            <el-alert
-              title="版权声明"
-              type="warning"
-              :closable="false"
-            >
+            <el-alert title="版权声明" type="warning" :closable="false">
               <template #default>
                 本文采用
                 <el-link
@@ -97,7 +98,7 @@
     </main>
 
     <!-- 互动栏 -->
-    <section class="post-actions" v-if="post">
+    <section v-if="post" class="post-actions">
       <div class="container">
         <div class="action-buttons">
           <el-button
@@ -129,11 +130,7 @@
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item command="report">举报</el-dropdown-item>
-                <el-dropdown-item
-                  v-if="canEdit"
-                  command="edit"
-                  divided
-                >
+                <el-dropdown-item v-if="canEdit" command="edit" divided>
                   编辑
                 </el-dropdown-item>
                 <el-dropdown-item
@@ -151,19 +148,19 @@
     </section>
 
     <!-- 评论区 -->
-    <section class="post-comments" v-if="post && post.allow_comments">
+    <section v-if="post && post.allow_comments" class="post-comments">
       <div class="container">
         <h3>评论</h3>
         <CommentList
+          v-model:comment-count="post.comment_count"
           :post-id="post.id"
-          :comment-count.sync="post.comment_count"
           @posted="post.comment_count += 1"
         />
       </div>
     </section>
 
     <!-- 404 / 无权限 -->
-    <div class="error-state" v-else-if="!loading">
+    <div v-else-if="!loading" class="error-state">
       <el-result
         icon="warning"
         title="文章不存在或无权限查看"
@@ -180,117 +177,123 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ref, computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { ElMessage, ElMessageBox } from "element-plus";
 import {
-  Clock, Pointer, Star, Link, MoreFilled, Folder
-} from '@element-plus/icons-vue'
-import { useAuthStore } from '@/stores/auth'
-import { usePostsStore } from '@/stores/posts'
-import { marked } from 'marked'
-import hljs from 'highlight.js'
-import CommentList from '@/components/posts/CommentList.vue'
+  Clock,
+  Pointer,
+  Star,
+  Link,
+  MoreFilled,
+  Folder,
+} from "@element-plus/icons-vue";
+import { useAuthStore } from "@/stores/auth";
+import { usePostsStore } from "@/stores/posts";
+import { marked } from "marked";
+import hljs from "highlight.js";
+import CommentList from "@/components/posts/CommentList.vue";
 
-const route = useRoute()
-const router = useRouter()
-const authStore = useAuthStore()
-const postsStore = usePostsStore()
+const route = useRoute();
+const router = useRouter();
+const authStore = useAuthStore();
+const postsStore = usePostsStore();
 
-const loading = ref(true)
-const post = ref(null)
+const loading = ref(true);
+const post = ref(null);
 
-const canEdit = computed(() =>
-  authStore.isAuthenticated &&
-  post.value &&
-  (post.value.author.id === authStore.user.id || authStore.user.is_admin)
-)
+const canEdit = computed(
+  () =>
+    authStore.isAuthenticated &&
+    post.value &&
+    (post.value.author.id === authStore.user.id || authStore.user.is_admin),
+);
 
 marked.setOptions({
   highlight(code, lang) {
     if (lang && hljs.getLanguage(lang)) {
-      return hljs.highlight(code, { language: lang }).value
+      return hljs.highlight(code, { language: lang }).value;
     }
-    return hljs.highlightAuto(code).value
-  }
-})
+    return hljs.highlightAuto(code).value;
+  },
+});
 
-const renderMarkdown = (raw) => marked.parse(raw || '')
-const postContentHtml = computed(() =>
-  post.value?.content_html || renderMarkdown(post.value?.content || '')
-)
+const renderMarkdown = (raw) => marked.parse(raw || "");
+const postContentHtml = computed(
+  () => post.value?.content_html || renderMarkdown(post.value?.content || ""),
+);
 
 const formatDate = (iso) => {
-  const date = new Date(iso)
-  return date.toLocaleString('zh-CN')
-}
+  const date = new Date(iso);
+  return date.toLocaleString("zh-CN");
+};
 
 const fetchPost = async () => {
-  loading.value = true
+  loading.value = true;
   try {
     const res = await fetch(`/api/posts/${route.params.id}`, {
       headers: authStore.token
         ? { Authorization: `Bearer ${authStore.token}` }
-        : {}
-    })
-    if (!res.ok) throw new Error('fetch error')
-    const data = await res.json()
-    post.value = data.post
+        : {},
+    });
+    if (!res.ok) throw new Error("fetch error");
+    const data = await res.json();
+    post.value = data.post;
   } catch (e) {
-    post.value = null
+    post.value = null;
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const toggleLike = async () => {
   if (!authStore.isAuthenticated) {
-    ElMessage.warning('请先登录')
-    return
+    ElMessage.warning("请先登录");
+    return;
   }
-  await postsStore.toggleLike(post.value.id)
-  post.value.liked = !post.value.liked
-  post.value.like_count += post.value.liked ? 1 : -1
-}
+  await postsStore.toggleLike(post.value.id);
+  post.value.liked = !post.value.liked;
+  post.value.like_count += post.value.liked ? 1 : -1;
+};
 
 const toggleFavorite = async () => {
   if (!authStore.isAuthenticated) {
-    ElMessage.warning('请先登录')
-    return
+    ElMessage.warning("请先登录");
+    return;
   }
-  await postsStore.toggleFavorite(post.value.id)
-  post.value.favorited = !post.value.favorited
-  post.value.favorite_count += post.value.favorited ? 1 : -1
-}
+  await postsStore.toggleFavorite(post.value.id);
+  post.value.favorited = !post.value.favorited;
+  post.value.favorite_count += post.value.favorited ? 1 : -1;
+};
 
 const copyLink = () => {
-  navigator.clipboard.writeText(location.href)
-  ElMessage.success('链接已复制')
-}
+  navigator.clipboard.writeText(location.href);
+  ElMessage.success("链接已复制");
+};
 
 const handleMoreAction = (cmd) => {
   switch (cmd) {
-    case 'edit':
-      router.push(`/write?id=${post.value.id}`)
-      break
-    case 'delete':
-      ElMessageBox.confirm('确定删除该文章吗？', '提示', { type: 'warning' })
+    case "edit":
+      router.push(`/write?id=${post.value.id}`);
+      break;
+    case "delete":
+      ElMessageBox.confirm("确定删除该文章吗？", "提示", { type: "warning" })
         .then(async () => {
-          await postsStore.deletePost(post.value.id)
-          ElMessage.success('删除成功')
-          router.replace('/posts')
+          await postsStore.deletePost(post.value.id);
+          ElMessage.success("删除成功");
+          router.replace("/posts");
         })
-        .catch(() => {})
-      break
-    case 'report':
-      ElMessage.info('举报功能开发中')
-      break
+        .catch(() => {});
+      break;
+    case "report":
+      ElMessage.info("举报功能开发中");
+      break;
   }
-}
+};
 
 onMounted(() => {
-  fetchPost()
-})
+  fetchPost();
+});
 </script>
 
 <style scoped>

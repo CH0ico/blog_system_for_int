@@ -1,22 +1,22 @@
 <template>
   <div class="post-card" :class="{ featured: featured }">
     <!-- 文章封面 -->
-    <div class="post-cover" v-if="post.cover">
+    <div v-if="post.cover" class="post-cover">
       <img :src="post.cover" :alt="post.title" />
     </div>
-    
+
     <!-- 文章内容 -->
     <div class="post-content">
       <!-- 标题 -->
       <h3 class="post-title" @click="goToPost">
         {{ post.title }}
       </h3>
-      
+
       <!-- 摘要 -->
-      <p class="post-summary" v-if="post.summary">
+      <p v-if="post.summary" class="post-summary">
         {{ post.summary }}
       </p>
-      
+
       <!-- 元信息 -->
       <div class="post-meta">
         <div class="meta-left">
@@ -27,39 +27,47 @@
               :size="24"
               class="author-avatar"
             >
-              {{ post.author.nickname?.charAt(0) || post.author.username?.charAt(0) }}
+              {{
+                post.author.nickname?.charAt(0) ||
+                post.author.username?.charAt(0)
+              }}
             </el-avatar>
-            <span class="author-name">{{ post.author.nickname || post.author.username }}</span>
+            <span class="author-name">{{
+              post.author.nickname || post.author.username
+            }}</span>
           </div>
-          
+
           <!-- 时间 -->
           <span class="post-time">{{ formatTime(post.created_at) }}</span>
-          
+
           <!-- 分类和标签 -->
-          <div class="post-tags" v-if="post.categories.length > 0 || post.tags.length > 0">
+          <div
+            v-if="post.categories.length > 0 || post.tags.length > 0"
+            class="post-tags"
+          >
             <el-tag
               v-for="category in post.categories.slice(0, 1)"
               :key="category.id"
               size="small"
-              @click.stop="goToCategory(category.slug)"
               class="category-tag"
+              @click.stop="goToCategory(category.slug)"
             >
               {{ category.name }}
             </el-tag>
-            
+
             <el-tag
               v-for="tag in post.tags.slice(0, 2)"
               :key="tag.id"
               size="small"
               type="info"
-              @click.stop="goToTag(tag.slug)"
               class="tag-item"
+              @click.stop="goToTag(tag.slug)"
             >
               {{ tag.name }}
             </el-tag>
           </div>
         </div>
-        
+
         <!-- 统计数据 -->
         <div class="meta-right">
           <div class="stat-item">
@@ -71,7 +79,9 @@
             <span>{{ post.like_count }}</span>
           </div>
           <div class="stat-item" @click.stop="handleFavorite">
-            <el-icon :class="{ favorited: post.favorited }"><Collection /></el-icon>
+            <el-icon :class="{ favorited: post.favorited }"
+              ><Collection
+            /></el-icon>
             <span>{{ post.favorite_count }}</span>
           </div>
           <div class="stat-item">
@@ -81,7 +91,7 @@
         </div>
       </div>
     </div>
-    
+
     <!-- 特色标记 -->
     <div v-if="featured" class="featured-badge">
       <el-icon><Star /></el-icon>
@@ -91,100 +101,105 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { useToast } from 'vue-toastification'
-import { 
-  View, StarFilled, Collection, ChatDotRound, Star
-} from '@element-plus/icons-vue'
-import { useAuthStore } from '@/stores/auth'
-import { usePostsStore } from '@/stores/posts'
-import { formatTime } from '@/utils/formatters'
+import { computed } from "vue";
+import { useRouter } from "vue-router";
+import { useToast } from "vue-toastification";
+import {
+  View,
+  StarFilled,
+  Collection,
+  ChatDotRound,
+  Star,
+} from "@element-plus/icons-vue";
+import { useAuthStore } from "@/stores/auth";
+import { usePostsStore } from "@/stores/posts";
+import { formatTime } from "@/utils/formatters";
 
-const router = useRouter()
-const toast = useToast()
-const authStore = useAuthStore()
-const postsStore = usePostsStore()
+const router = useRouter();
+const toast = useToast();
+const authStore = useAuthStore();
+const postsStore = usePostsStore();
 
 // Props
 const props = defineProps({
   post: {
     type: Object,
-    required: true
+    required: true,
   },
   featured: {
     type: Boolean,
-    default: false
-  }
-})
+    default: false,
+  },
+});
 
 // 计算属性
 const canLike = computed(() => {
-  return authStore.isAuthenticated
-})
+  return authStore.isAuthenticated;
+});
 
 const canFavorite = computed(() => {
-  return authStore.isAuthenticated
-})
+  return authStore.isAuthenticated;
+});
 
 // 方法
 const goToPost = () => {
-  router.push(`/post/${props.post.id}`)
-}
+  router.push(`/post/${props.post.id}`);
+};
 
 const goToAuthor = () => {
-  router.push(`/users/${props.post.author.username}`)
-}
+  router.push(`/users/${props.post.author.username}`);
+};
 
 const goToCategory = (slug) => {
-  router.push(`/categories/${slug}`)
-}
+  router.push(`/categories/${slug}`);
+};
 
 const goToTag = (slug) => {
-  router.push(`/tags/${slug}`)
-}
+  router.push(`/tags/${slug}`);
+};
 
 const handleLike = async () => {
   if (!canLike.value) {
-    toast.info('请先登录')
-    return
+    toast.info("请先登录");
+    return;
   }
-  
+
   try {
-    await postsStore.likePost(props.post.id)
+    await postsStore.likePost(props.post.id);
   } catch (error) {
-    console.error('Like post error:', error)
+    console.error("Like post error:", error);
   }
-}
+};
 
 const handleFavorite = async () => {
   if (!canFavorite.value) {
-    toast.info('请先登录')
-    return
+    toast.info("请先登录");
+    return;
   }
-  
+
   try {
-    await postsStore.favoritePost(props.post.id)
+    await postsStore.favoritePost(props.post.id);
   } catch (error) {
-    console.error('Favorite post error:', error)
+    console.error("Favorite post error:", error);
   }
-}
+};
 </script>
 
 <style scoped>
 .post-card {
   background: var(--el-bg-color);
   border: 1px solid var(--el-border-color-lighter);
-  border-radius: 8px;
+  border-radius: 14px;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
   cursor: pointer;
   position: relative;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.06);
 }
 
 .post-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--el-box-shadow);
+  transform: translateY(-3px);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.12);
 }
 
 .post-card.featured {
@@ -193,7 +208,7 @@ const handleFavorite = async () => {
 
 .post-cover {
   width: 100%;
-  height: 200px;
+  height: 220px;
   overflow: hidden;
 }
 
@@ -209,17 +224,17 @@ const handleFavorite = async () => {
 }
 
 .post-content {
-  padding: 20px;
+  padding: 22px;
 }
 
 .post-title {
-  font-size: 1.25rem;
-  font-weight: 600;
+  font-size: 1.3rem;
+  font-weight: 700;
   margin: 0 0 12px 0;
   color: var(--el-text-color-primary);
-  line-height: 1.4;
+  line-height: 1.35;
   cursor: pointer;
-  transition: color 0.3s;
+  transition: color 0.2s;
 }
 
 .post-title:hover {
@@ -229,7 +244,7 @@ const handleFavorite = async () => {
 .post-summary {
   font-size: 14px;
   color: var(--el-text-color-secondary);
-  line-height: 1.6;
+  line-height: 1.7;
   margin: 0 0 16px 0;
   display: -webkit-box;
   -webkit-line-clamp: 3;
@@ -294,7 +309,7 @@ const handleFavorite = async () => {
 .meta-right {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 
 .stat-item {
@@ -329,12 +344,13 @@ const handleFavorite = async () => {
   right: 12px;
   background: var(--el-color-primary);
   color: white;
-  padding: 4px 8px;
-  border-radius: 4px;
+  padding: 6px 10px;
+  border-radius: 10px;
   font-size: 12px;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.12);
 }
 
 .featured-badge .el-icon {
@@ -346,25 +362,25 @@ const handleFavorite = async () => {
   .post-content {
     padding: 16px;
   }
-  
+
   .post-title {
     font-size: 1.1rem;
   }
-  
+
   .post-summary {
     font-size: 13px;
   }
-  
+
   .post-meta {
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
   }
-  
+
   .meta-left {
     order: 2;
   }
-  
+
   .meta-right {
     order: 1;
     align-self: flex-end;
@@ -375,29 +391,29 @@ const handleFavorite = async () => {
   .post-cover {
     height: 150px;
   }
-  
+
   .post-content {
     padding: 12px;
   }
-  
+
   .post-title {
     font-size: 1rem;
     margin-bottom: 8px;
   }
-  
+
   .post-summary {
     font-size: 12px;
     margin-bottom: 12px;
   }
-  
+
   .post-meta {
     gap: 6px;
   }
-  
+
   .stat-item {
     font-size: 12px;
   }
-  
+
   .stat-item .el-icon {
     font-size: 12px;
   }

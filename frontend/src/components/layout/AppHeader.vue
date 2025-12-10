@@ -8,7 +8,7 @@
           <span class="logo-text">博客系统</span>
         </router-link>
       </div>
-      
+
       <!-- 导航菜单 -->
       <nav class="nav-menu">
         <el-menu
@@ -38,7 +38,7 @@
           </el-menu-item>
         </el-menu>
       </nav>
-      
+
       <!-- 用户操作区 -->
       <div class="user-section">
         <!-- 搜索框 -->
@@ -54,7 +54,7 @@
               <el-icon><Search /></el-icon>
             </template>
           </el-input>
-          
+
           <!-- 搜索建议 -->
           <div v-if="searchSuggestions.length > 0" class="search-suggestions">
             <div
@@ -64,16 +64,22 @@
               @click="handleSuggestionClick(suggestion)"
             >
               <el-icon class="suggestion-icon">
-                <component :is="suggestion.type === 'post' ? 'Document' : 'CollectionTag'" />
+                <component
+                  :is="
+                    suggestion.type === 'post' ? 'Document' : 'CollectionTag'
+                  "
+                />
               </el-icon>
               <span class="suggestion-text">{{ suggestion.text }}</span>
             </div>
           </div>
         </div>
-        
+
         <!-- 写文章按钮 -->
         <el-button
-          v-if="authStore.isAuthenticated && authStore.hasPermission('create_posts')"
+          v-if="
+            authStore.isAuthenticated && authStore.hasPermission('create_posts')
+          "
           type="primary"
           class="write-btn"
           @click="$router.push('/write')"
@@ -81,7 +87,7 @@
           <el-icon><EditPen /></el-icon>
           写文章
         </el-button>
-        
+
         <!-- 用户菜单 -->
         <div v-if="authStore.isAuthenticated" class="user-menu">
           <!-- 通知 -->
@@ -90,14 +96,11 @@
             :hidden="notificationStore.unreadCount === 0"
             class="notification-badge"
           >
-            <el-button
-              circle
-              @click="$router.push('/notifications')"
-            >
+            <el-button circle @click="$router.push('/notifications')">
               <el-icon><Bell /></el-icon>
             </el-button>
           </el-badge>
-          
+
           <!-- 用户头像和下拉菜单 -->
           <el-dropdown @command="handleUserCommand">
             <div class="user-avatar">
@@ -106,11 +109,14 @@
                 :size="36"
                 class="avatar"
               >
-                {{ authStore.user?.nickname?.charAt(0) || authStore.user?.username?.charAt(0) }}
+                {{
+                  authStore.user?.nickname?.charAt(0) ||
+                  authStore.user?.username?.charAt(0)
+                }}
               </el-avatar>
               <el-icon class="dropdown-icon"><ArrowDown /></el-icon>
             </div>
-            
+
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item command="profile">
@@ -129,26 +135,26 @@
             </template>
           </el-dropdown>
         </div>
-        
+
         <!-- 登录/注册按钮 -->
         <div v-else class="auth-buttons">
           <el-button @click="$router.push('/login')">登录</el-button>
-          <el-button type="primary" @click="$router.push('/register')">注册</el-button>
+          <el-button type="primary" @click="$router.push('/register')"
+            >注册</el-button
+          >
         </div>
       </div>
-      
+
       <!-- 移动端菜单按钮 -->
       <div class="mobile-menu-btn">
-        <el-button
-          @click="mobileMenuVisible = !mobileMenuVisible"
-        >
+        <el-button @click="mobileMenuVisible = !mobileMenuVisible">
           <el-icon>
             <component :is="mobileMenuVisible ? Close : Menu" />
           </el-icon>
         </el-button>
       </div>
     </div>
-    
+
     <!-- 移动端菜单 -->
     <div v-if="mobileMenuVisible" class="mobile-menu">
       <el-menu
@@ -183,128 +189,138 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
-import { 
-  Edit, Search, EditPen, Bell, User, Setting, 
-  SwitchButton, ArrowDown, Menu, Close, Document,
-  CollectionTag
-} from '@element-plus/icons-vue'
-import { useAuthStore } from '@/stores/auth'
-import { useNotificationStore } from '@/stores/notification'
-import { usePostsStore } from '@/stores/posts'
-import { debounce } from 'lodash-es'
+import { ref, computed, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import {
+  Edit,
+  Search,
+  EditPen,
+  Bell,
+  User,
+  Setting,
+  SwitchButton,
+  ArrowDown,
+  Menu,
+  Close,
+  Document,
+  CollectionTag,
+} from "@element-plus/icons-vue";
+import { useAuthStore } from "@/stores/auth";
+import { useNotificationStore } from "@/stores/notification";
+import { usePostsStore } from "@/stores/posts";
+import { debounce } from "lodash-es";
 
-const route = useRoute()
-const router = useRouter()
-const authStore = useAuthStore()
-const notificationStore = useNotificationStore()
-const postsStore = usePostsStore()
+const route = useRoute();
+const router = useRouter();
+const authStore = useAuthStore();
+const notificationStore = useNotificationStore();
+const postsStore = usePostsStore();
 
 // 状态
-const searchQuery = ref('')
-const searchSuggestions = ref([])
-const mobileMenuVisible = ref(false)
+const searchQuery = ref("");
+const searchSuggestions = ref([]);
+const mobileMenuVisible = ref(false);
 
 // 计算属性
 const activeIndex = computed(() => {
-  const path = route.path
-  if (path === '/') return 'home'
-  if (path.startsWith('/posts')) return 'posts'
-  if (path.startsWith('/archives')) return 'archives'
-  if (path.startsWith('/tags')) return 'tags'
-  if (path.startsWith('/categories')) return 'categories'
-  if (path.startsWith('/about')) return 'about'
-  return 'home'
-})
+  const path = route.path;
+  if (path === "/") return "home";
+  if (path.startsWith("/posts")) return "posts";
+  if (path.startsWith("/archives")) return "archives";
+  if (path.startsWith("/tags")) return "tags";
+  if (path.startsWith("/categories")) return "categories";
+  if (path.startsWith("/about")) return "about";
+  return "home";
+});
 
 // 处理方法
 const handleMenuSelect = (index) => {
   // 菜单选择处理
-}
+};
 
 const handleMobileMenuSelect = (index) => {
-  mobileMenuVisible.value = false
-}
+  mobileMenuVisible.value = false;
+};
 
 const handleSearch = () => {
-  if (!searchQuery.value.trim()) return
-  
+  if (!searchQuery.value.trim()) return;
+
   router.push({
-    path: '/search',
-    query: { q: searchQuery.value.trim() }
-  })
-  
-  searchSuggestions.value = []
-}
+    path: "/search",
+    query: { q: searchQuery.value.trim() },
+  });
+
+  searchSuggestions.value = [];
+};
 
 const handleSearchInput = debounce(async () => {
-  const query = searchQuery.value.trim()
+  const query = searchQuery.value.trim();
   if (!query || query.length < 2) {
-    searchSuggestions.value = []
-    return
+    searchSuggestions.value = [];
+    return;
   }
-  
+
   try {
-    const suggestions = await postsStore.getSearchSuggestions(query)
-    searchSuggestions.value = suggestions
+    const suggestions = await postsStore.getSearchSuggestions(query);
+    searchSuggestions.value = suggestions;
   } catch (error) {
-    console.error('Search suggestions error:', error)
-    searchSuggestions.value = []
+    console.error("Search suggestions error:", error);
+    searchSuggestions.value = [];
   }
-}, 300)
+}, 300);
 
 const handleSuggestionClick = (suggestion) => {
-  searchQuery.value = ''
-  searchSuggestions.value = []
-  
-  if (suggestion.type === 'post') {
-    router.push(`/post/${suggestion.id}`)
-  } else if (suggestion.type === 'tag') {
-    router.push(`/tags/${suggestion.slug}`)
+  searchQuery.value = "";
+  searchSuggestions.value = [];
+
+  if (suggestion.type === "post") {
+    router.push(`/post/${suggestion.id}`);
+  } else if (suggestion.type === "tag") {
+    router.push(`/tags/${suggestion.slug}`);
   }
-}
+};
 
 const handleUserCommand = async (command) => {
   switch (command) {
-    case 'profile':
-      router.push('/profile')
-      break
-    case 'admin':
+    case "profile":
+      router.push("/profile");
+      break;
+    case "admin":
       // 跳转到后台管理
-      window.open('/admin', '_blank')
-      break
-    case 'logout':
+      window.open("/admin", "_blank");
+      break;
+    case "logout":
       try {
-        await authStore.logout()
+        await authStore.logout();
       } catch (error) {
-        console.error('Logout error:', error)
+        console.error("Logout error:", error);
       }
-      break
+      break;
   }
-}
+};
 
 // 点击外部关闭搜索建议
 const handleClickOutside = (event) => {
-  const searchBox = event.target.closest('.search-box')
+  const searchBox = event.target.closest(".search-box");
   if (!searchBox) {
-    searchSuggestions.value = []
+    searchSuggestions.value = [];
   }
-}
+};
 
 onMounted(() => {
-  document.addEventListener('click', handleClickOutside)
-  
+  document.addEventListener("click", handleClickOutside);
+
   // 初始化通知
   if (authStore.isAuthenticated) {
-    notificationStore.fetchNotifications({ unread_only: true })
+    notificationStore.fetchNotifications({ unread_only: true });
   }
-})
+});
 </script>
 
 <style scoped>
 .app-header {
-  background-color: var(--el-bg-color);
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: saturate(120%) blur(10px);
   border-bottom: 1px solid var(--el-border-color-lighter);
   padding: 0;
   position: sticky;
@@ -316,7 +332,7 @@ onMounted(() => {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 20px;
-  height: 60px;
+  height: 64px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -331,7 +347,8 @@ onMounted(() => {
   align-items: center;
   text-decoration: none;
   color: var(--el-text-color-primary);
-  font-weight: bold;
+  font-weight: 800;
+  letter-spacing: -0.01em;
   font-size: 20px;
 }
 
@@ -409,6 +426,7 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 4px;
+  border-radius: 10px;
 }
 
 .user-menu {
@@ -461,27 +479,27 @@ onMounted(() => {
   .header-container {
     padding: 0 16px;
   }
-  
+
   .nav-menu {
     display: none;
   }
-  
+
   .search-input {
     width: 150px;
   }
-  
+
   .write-btn {
     display: none;
   }
-  
+
   .mobile-menu-btn {
     display: block;
   }
-  
+
   .user-menu {
     gap: 8px;
   }
-  
+
   .notification-badge {
     margin-right: 4px;
   }
@@ -491,11 +509,11 @@ onMounted(() => {
   .search-box {
     display: none;
   }
-  
+
   .auth-buttons {
     gap: 4px;
   }
-  
+
   .auth-buttons .el-button {
     padding: 8px 12px;
     font-size: 12px;

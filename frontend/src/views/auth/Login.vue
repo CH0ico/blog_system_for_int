@@ -6,13 +6,13 @@
           <h1>登录</h1>
           <p>欢迎回来，请输入您的账号信息</p>
         </div>
-        
+
         <el-form
           ref="loginFormRef"
           :model="loginForm"
           :rules="loginRules"
-          @submit.prevent="handleLogin"
           class="login-form"
+          @submit.prevent="handleLogin"
         >
           <el-form-item prop="username_or_email">
             <el-input
@@ -25,7 +25,7 @@
               </template>
             </el-input>
           </el-form-item>
-          
+
           <el-form-item prop="password">
             <el-input
               v-model="loginForm.password"
@@ -39,7 +39,7 @@
               </template>
             </el-input>
           </el-form-item>
-          
+
           <el-form-item>
             <div class="form-options">
               <el-checkbox v-model="loginForm.remember">记住我</el-checkbox>
@@ -48,20 +48,20 @@
               </router-link>
             </div>
           </el-form-item>
-          
+
           <el-form-item>
             <el-button
               type="primary"
               size="large"
               :loading="loading"
-              @click="handleLogin"
               class="login-button"
+              @click="handleLogin"
             >
               登录
             </el-button>
           </el-form-item>
         </el-form>
-        
+
         <div class="login-footer">
           <p>还没有账号？<router-link to="/register">立即注册</router-link></p>
         </div>
@@ -71,58 +71,58 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-import { ElMessage } from 'element-plus'
-import { User, Lock } from '@element-plus/icons-vue'
-import { useAuthStore } from '@/stores/auth'
+import { ref, reactive } from "vue";
+import { useRouter, useRoute } from "vue-router";
+import { ElMessage } from "element-plus";
+import { User, Lock } from "@element-plus/icons-vue";
+import { useAuthStore } from "@/stores/auth";
 
-const router = useRouter()
-const route = useRoute()
-const authStore = useAuthStore()
+const router = useRouter();
+const route = useRoute();
+const authStore = useAuthStore();
 
-const loginFormRef = ref()
-const loading = ref(false)
+const loginFormRef = ref();
+const loading = ref(false);
 
 const loginForm = reactive({
-  username_or_email: '',
-  password: '',
-  remember: false
-})
+  username_or_email: "",
+  password: "",
+  remember: false,
+});
 
 const loginRules = {
   username_or_email: [
-    { required: true, message: '请输入用户名或邮箱', trigger: 'blur' },
-    { min: 3, message: '用户名至少3个字符', trigger: 'blur' }
+    { required: true, message: "请输入用户名或邮箱", trigger: "blur" },
+    { min: 3, message: "用户名至少3个字符", trigger: "blur" },
   ],
   password: [
-    { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, message: '密码长度至少为6位', trigger: 'blur' }
-  ]
-}
+    { required: true, message: "请输入密码", trigger: "blur" },
+    { min: 6, message: "密码长度至少为6位", trigger: "blur" },
+  ],
+};
 
 const handleLogin = async () => {
-  if (!loginFormRef.value) return
-  
+  if (!loginFormRef.value) return;
+
   try {
-    await loginFormRef.value.validate()
-    loading.value = true
-    
-    await authStore.login(loginForm)
-    
-    ElMessage.success('登录成功！')
-    
+    await loginFormRef.value.validate();
+    loading.value = true;
+
+    await authStore.login(loginForm);
+
+    ElMessage.success("登录成功！");
+
     // 重定向到之前访问的页面或首页
-    const redirect = route.query.redirect || '/'
-    router.push(redirect)
+    const redirect = route.query.redirect || "/";
+    router.push(redirect);
   } catch (error) {
     if (error !== false) {
-      ElMessage.error(error.message || '登录失败，请检查您的账号信息')
+      ElMessage.error(error.message || "登录失败，请检查您的账号信息");
     }
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 </script>
 
 <style scoped>
@@ -209,7 +209,7 @@ const handleLogin = async () => {
   .login-card {
     padding: 30px 20px;
   }
-  
+
   .login-header h1 {
     font-size: 1.5rem;
   }

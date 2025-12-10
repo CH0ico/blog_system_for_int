@@ -7,7 +7,7 @@
 
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt_identity, create_access_token, create_refresh_token
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from flask import current_app
 from werkzeug.utils import secure_filename
 import os
@@ -259,7 +259,7 @@ def update_profile():
             
             setattr(user, field, value or '')
     
-    user.updated_at = datetime.utcnow()
+    user.updated_at = datetime.now(timezone.utc)
     db.session.commit()
     
     return jsonify({
@@ -304,7 +304,7 @@ def change_password():
         }), 400
     
     user.set_password(new_password)
-    user.updated_at = datetime.utcnow()
+    user.updated_at = datetime.now(timezone.utc)
     db.session.commit()
     
     return jsonify({'message': '密码修改成功'})
@@ -385,7 +385,7 @@ def reset_password():
         }), 404
     
     user.set_password(new_password)
-    user.updated_at = datetime.utcnow()
+    user.updated_at = datetime.now(timezone.utc)
     db.session.commit()
     
     return jsonify({'message': '密码重置成功'})
@@ -466,7 +466,7 @@ def confirm_email():
         return jsonify({'message': '邮箱已经验证过了'})
     
     user.is_verified = True
-    user.updated_at = datetime.utcnow()
+    user.updated_at = datetime.now(timezone.utc)
     db.session.commit()
     
     return jsonify({'message': '邮箱验证成功'})

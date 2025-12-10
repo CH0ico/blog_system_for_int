@@ -1,11 +1,13 @@
 <template>
-  <div class="category-detail" v-loading="loading">
+  <div v-loading="loading" class="category-detail">
     <div class="container">
       <div class="page-header">
         <div>
           <p class="breadcrumb">分类</p>
           <h1>{{ categoryInfo?.name || route.params.slug }}</h1>
-          <p class="description">{{ categoryInfo?.description || '分类下的文章列表' }}</p>
+          <p class="description">
+            {{ categoryInfo?.description || "分类下的文章列表" }}
+          </p>
         </div>
         <el-tag type="success">{{ postsStore.pagination.total }} 篇文章</el-tag>
       </div>
@@ -19,44 +21,46 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
-import PostItem from '@/components/posts/PostItem.vue'
-import { usePostsStore } from '@/stores/posts'
+import { ref, computed, onMounted, watch } from "vue";
+import { useRoute } from "vue-router";
+import PostItem from "@/components/posts/PostItem.vue";
+import { usePostsStore } from "@/stores/posts";
 
-const route = useRoute()
-const postsStore = usePostsStore()
-const loading = ref(false)
-const categoryInfo = ref(null)
-const posts = computed(() => postsStore.posts)
+const route = useRoute();
+const postsStore = usePostsStore();
+const loading = ref(false);
+const categoryInfo = ref(null);
+const posts = computed(() => postsStore.posts);
 
 const fetchCategoryInfo = async () => {
-  const res = await fetch('/api/posts/categories')
-  const data = await res.json()
-  categoryInfo.value = (data.categories || []).find((c) => c.slug === route.params.slug)
-}
+  const res = await fetch("/api/posts/categories");
+  const data = await res.json();
+  categoryInfo.value = (data.categories || []).find(
+    (c) => c.slug === route.params.slug,
+  );
+};
 
 const fetchPosts = async () => {
-  loading.value = true
+  loading.value = true;
   try {
-    await postsStore.fetchPosts({ category: route.params.slug, per_page: 20 })
+    await postsStore.fetchPosts({ category: route.params.slug, per_page: 20 });
   } catch (error) {
-    console.error('加载分类文章失败', error)
+    console.error("加载分类文章失败", error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const loadData = async () => {
-  await Promise.all([fetchCategoryInfo(), fetchPosts()])
-}
+  await Promise.all([fetchCategoryInfo(), fetchPosts()]);
+};
 
-onMounted(loadData)
+onMounted(loadData);
 
 watch(
   () => route.params.slug,
-  () => loadData()
-)
+  () => loadData(),
+);
 </script>
 
 <style scoped>

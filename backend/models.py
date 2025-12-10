@@ -8,7 +8,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timezone
 import json
 
 db = SQLAlchemy()
@@ -38,8 +38,8 @@ class User(UserMixin, db.Model):
     is_admin = db.Column(db.Boolean, default=False)
     
     # 时间戳
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     last_login_at = db.Column(db.DateTime)
     
     # 关系定义
@@ -149,8 +149,8 @@ class Post(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     
     # 时间戳
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     published_at = db.Column(db.DateTime)
     
     # 关系定义
@@ -214,8 +214,8 @@ class Comment(db.Model):
     parent_id = db.Column(db.Integer, db.ForeignKey('comments.id'), nullable=True)
     
     # 时间戳
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
+    updated_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     
     # 自引用关系 - 回复
     replies = db.relationship(
@@ -260,7 +260,7 @@ class Tag(db.Model):
     post_count = db.Column(db.Integer, default=0)
     
     # 时间戳
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     def to_dict(self):
         """转换为字典"""
@@ -286,7 +286,7 @@ class Category(db.Model):
     post_count = db.Column(db.Integer, default=0)
     
     # 时间戳
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     def to_dict(self):
         """转换为字典"""
@@ -303,13 +303,13 @@ class Category(db.Model):
 post_tags = db.Table('post_tags',
     db.Column('post_id', db.Integer, db.ForeignKey('posts.id'), primary_key=True),
     db.Column('tag_id', db.Integer, db.ForeignKey('tags.id'), primary_key=True),
-    db.Column('created_at', db.DateTime, default=datetime.utcnow)
+    db.Column('created_at', db.DateTime, default=lambda: datetime.now(timezone.utc))
 )
 
 post_categories = db.Table('post_categories',
     db.Column('post_id', db.Integer, db.ForeignKey('posts.id'), primary_key=True),
     db.Column('category_id', db.Integer, db.ForeignKey('categories.id'), primary_key=True),
-    db.Column('created_at', db.DateTime, default=datetime.utcnow)
+    db.Column('created_at', db.DateTime, default=lambda: datetime.now(timezone.utc))
 )
 
 class Like(db.Model):
@@ -322,7 +322,7 @@ class Like(db.Model):
     comment_id = db.Column(db.Integer, db.ForeignKey('comments.id'), nullable=True)
     
     # 时间戳
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     # 确保一个用户对同一内容只能点赞一次
     __table_args__ = (
@@ -343,7 +343,7 @@ class Favorite(db.Model):
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), nullable=False)
     
     # 时间戳
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     # 确保一个用户对同一文章只能收藏一次
     __table_args__ = (
@@ -359,7 +359,7 @@ class Follow(db.Model):
     followed_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     
     # 时间戳
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     # 确保不能重复关注
     __table_args__ = (
@@ -389,7 +389,7 @@ class Notification(db.Model):
     is_read = db.Column(db.Boolean, default=False)
     
     # 时间戳
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     # 关系
     actor = db.relationship('User', foreign_keys=[actor_id])
@@ -435,7 +435,7 @@ class ViewLog(db.Model):
     referer = db.Column(db.String(500), nullable=True)
     
     # 时间戳
-    viewed_at = db.Column(db.DateTime, default=datetime.utcnow)
+    viewed_at = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
     
     # 关系
     user = db.relationship('User')
