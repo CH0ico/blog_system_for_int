@@ -1,134 +1,158 @@
 <template>
-  <div class="home-page">
-    <!-- 英雄区域 -->
-    <section v-if="!authStore.isAuthenticated" class="hero-section">
-      <div class="hero-content">
-        <h1 class="hero-title">欢迎来到博客系统</h1>
-        <p class="hero-subtitle">分享你的想法，连接更多可能</p>
-        <div class="hero-actions">
-          <el-button
-            type="primary"
-            size="large"
-            class="hero-primary"
-            @click="$router.push('/register')"
-            >开始写作</el-button
-          >
-          <el-button
-            size="large"
-            class="hero-secondary"
-            @click="$router.push('/posts')"
-            >浏览文章</el-button
-          >
+  <div class="modern-home">
+    <!-- 动态背景层 -->
+    <div class="ambient-background">
+      <div class="glow-orb orb-1"></div>
+      <div class="glow-orb orb-2"></div>
+      <div class="noise-overlay"></div>
+    </div>
+
+    <!-- 顶部 Hero 区域：极致的大字排版 -->
+    <section v-if="!authStore.isAuthenticated" class="hero-wrapper">
+      <div class="hero-container">
+        <div class="hero-text-group">
+          <h1 class="display-title">
+            Share <br />
+            <span class="gradient-text">Insights.</span>
+          </h1>
+          <p class="hero-desc">
+            捕捉瞬时的灵感，构建你的知识网络。
+            <br />一个纯粹、优雅的写作社区。
+          </p>
+          
+          <div class="hero-btn-group">
+            <button class="btn-primary" @click="$router.push('/register')">
+              开始创作 <span class="arrow">↗</span>
+            </button>
+            <button class="btn-text" @click="$router.push('/posts')">
+              随便逛逛
+            </button>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- 主要内容区域 -->
-    <div class="main-container">
-      <div class="content-wrapper">
-        <!-- 左侧内容 -->
-        <div class="main-content">
-          <section class="network-highlight">
+    <!-- 主布局：非对称栅格 -->
+    <div class="layout-container">
+      <div class="main-grid">
+        
+        <!-- 左侧流 -->
+        <main class="content-flow">
+          <!-- 仪表盘区域 -->
+          <div class="glass-panel network-panel-wrapper">
+            <div class="panel-label">System Status</div>
             <NetworkPanel />
-          </section>
-          <!-- 推荐文章 -->
-          <section v-if="featuredPosts.length > 0" class="featured-posts">
-            <div class="section-header">
-              <h2>推荐文章</h2>
-              <router-link to="/posts" class="more-link">查看更多</router-link>
+          </div>
+
+          <!-- 精选文章 (Bento Grid 风格) -->
+          <section v-if="featuredPosts.length > 0" class="section-block">
+            <div class="section-head">
+              <h2>Featured</h2>
+              <router-link to="/posts" class="link-hover">View All</router-link>
             </div>
-            <div class="posts-grid">
-              <PostCard
-                v-for="post in featuredPosts"
-                :key="post.id"
-                :post="post"
-                :featured="true"
-              />
+            <div class="featured-grid">
+              <!-- 这里假设 PostCard 能自适应父容器高度 -->
+              <div 
+                v-for="post in featuredPosts" 
+                :key="post.id" 
+                class="featured-item"
+              >
+                <PostCard :post="post" :featured="true" />
+              </div>
             </div>
           </section>
 
-          <!-- 最新文章 -->
-          <section class="latest-posts">
-            <div class="section-header">
-              <h2>最新文章</h2>
-              <router-link to="/posts" class="more-link">查看更多</router-link>
+          <!-- 最新流 -->
+          <section class="section-block">
+            <div class="section-head">
+              <h2>Latest Stories</h2>
             </div>
-            <div class="posts-list">
-              <PostItem
-                v-for="post in latestPosts"
-                :key="post.id"
-                :post="post"
-              />
+            <div class="feed-list">
+              <div 
+                v-for="post in latestPosts" 
+                :key="post.id" 
+                class="feed-item-wrapper"
+              >
+                <PostItem :post="post" />
+              </div>
             </div>
 
-            <!-- 加载更多 -->
-            <div v-if="hasMorePosts" class="load-more">
-              <el-button :loading="loading" @click="loadMorePosts">
-                加载更多
+            <div v-if="hasMorePosts" class="load-more-wrapper">
+              <el-button 
+                class="minimal-btn" 
+                :loading="loading" 
+                @click="loadMorePosts"
+              >
+                Load More
               </el-button>
             </div>
           </section>
-        </div>
+        </main>
 
-        <!-- 右侧边栏 -->
-        <aside class="sidebar">
-          <!-- 用户信息卡片 -->
-          <UserCard v-if="authStore.isAuthenticated" />
+        <!-- 右侧侧边栏：模块化组件 -->
+        <aside class="sidebar-col">
+          <div class="sticky-wrapper">
+            
+            <!-- 用户卡片 -->
+            <div v-if="authStore.isAuthenticated" class="widget-box user-widget">
+              <UserCard />
+            </div>
 
-          <!-- 热门文章 -->
-          <section class="sidebar-section">
-            <h3>热门文章</h3>
-            <div class="hot-posts">
-              <div
-                v-for="(post, index) in hotPosts"
-                :key="post.id"
-                class="hot-post-item"
-                @click="$router.push(`/post/${post.id}`)"
-              >
-                <span class="post-rank">{{ index + 1 }}</span>
-                <span class="post-title">{{ post.title }}</span>
+            <!-- 数据统计 (极简数字) -->
+            <div class="widget-box stats-widget">
+              <div class="widget-header">Overview</div>
+              <div class="stats-matrix">
+                <div class="stat-cell">
+                  <span class="stat-num">{{ stats.totalPosts }}</span>
+                  <span class="stat-meta">Posts</span>
+                </div>
+                <div class="stat-cell">
+                  <span class="stat-num">{{ stats.totalTags }}</span>
+                  <span class="stat-meta">Tags</span>
+                </div>
+                <div class="stat-cell">
+                  <span class="stat-num">{{ stats.runningDays }}</span>
+                  <span class="stat-meta">Days</span>
+                </div>
+                <div v-if="onlineCount > 0" class="stat-cell highlight">
+                  <span class="stat-num">{{ onlineCount }}</span>
+                  <span class="stat-meta">Online</span>
+                </div>
               </div>
             </div>
-          </section>
 
-          <!-- 标签云 -->
-          <section v-if="tags.length > 0" class="sidebar-section">
-            <h3>标签云</h3>
-            <div class="tag-cloud">
-              <el-tag
-                v-for="tag in tags"
-                :key="tag.id"
-                :style="{ fontSize: getTagSize(tag.post_count) + 'px' }"
-                class="tag-item"
-                @click="$router.push(`/tags/${tag.slug}`)"
-              >
-                {{ tag.name }}
-              </el-tag>
+            <!-- 热门文章 (榜单风格) -->
+            <div class="widget-box">
+              <div class="widget-header">Trending</div>
+              <ul class="trend-list">
+                <li
+                  v-for="(post, index) in hotPosts"
+                  :key="post.id"
+                  class="trend-item"
+                  @click="$router.push(`/post/${post.id}`)"
+                >
+                  <span class="trend-rank">{{ index + 1 }}</span>
+                  <span class="trend-title">{{ post.title }}</span>
+                </li>
+              </ul>
             </div>
-          </section>
 
-          <!-- 统计信息 -->
-          <section class="sidebar-section">
-            <h3>网站统计</h3>
-            <div class="stats-info">
-              <div class="stat-item">
-                <span class="stat-label">文章总数</span>
-                <span class="stat-value">{{ stats.totalPosts }}</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-label">标签数量</span>
-                <span class="stat-value">{{ stats.totalTags }}</span>
-              </div>
-              <div class="stat-item">
-                <span class="stat-label">运行天数</span>
-                <span class="stat-value">{{ stats.runningDays }}</span>
-              </div>
-              <div v-if="onlineCount > 0" class="stat-item">
-                <span class="stat-label">在线用户</span>
-                <span class="stat-value">{{ onlineCount }}</span>
+            <!-- 标签 (胶囊风格) -->
+            <div v-if="tags.length > 0" class="widget-box">
+              <div class="widget-header">Explore</div>
+              <div class="tags-flex">
+                <span
+                  v-for="tag in tags"
+                  :key="tag.id"
+                  class="tag-pill"
+                  @click="$router.push(`/tags/${tag.slug}`)"
+                >
+                  #{{ tag.name }}
+                </span>
               </div>
             </div>
-          </section>
+
+          </div>
         </aside>
       </div>
     </div>
@@ -201,11 +225,10 @@ const fetchTags = async () => {
   }
 };
 
-// 计算标签大小
+// 计算标签大小 (虽然Template里改用了统一大小的胶囊，但逻辑保留以免报错)
 const getTagSize = (postCount) => {
   const minSize = 12;
   const maxSize = 20;
-  // 确保tags存在且有数据
   const validTags = tags.value || [];
   if (validTags.length === 0) return minSize;
 
@@ -234,14 +257,9 @@ const loadMorePosts = async () => {
 // 获取统计信息
 const fetchStats = async () => {
   try {
-    // 获取文章总数
     await postsStore.fetchPosts({ per_page: 1 });
     stats.value.totalPosts = postsStore.pagination.total;
-
-    // 获取标签数量 - 确保tags已经加载
     stats.value.totalTags = (tags.value || []).length;
-
-    // 计算运行天数
     const startDate = new Date("2024-01-01");
     const now = new Date();
     const diffTime = Math.abs(now - startDate);
@@ -252,10 +270,7 @@ const fetchStats = async () => {
 };
 
 onMounted(async () => {
-  // 获取最新文章
   await postsStore.fetchPosts();
-
-  // 并行获取其他数据
   await Promise.all([
     fetchFeaturedPosts(),
     fetchHotPosts(),
@@ -263,7 +278,6 @@ onMounted(async () => {
     fetchStats(),
   ]);
 
-  // 初始化Socket连接
   if (authStore.isAuthenticated) {
     socketStore.initializeSocket();
   }
@@ -271,323 +285,465 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.home-page {
-  min-height: 100vh;
+/* =========================================
+   DESIGN SYSTEM - MINIMALIST
+   ========================================= */
+:root {
+  --font-display: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --bg-color: #FAFAFA; /* 极淡的灰白，比纯白更护眼 */
+  --text-primary: #111111; /* 接近纯黑 */
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+  --accent-color: #000000; /* 高级感往往来自于纯黑色的点缀 */
+  --border-light: rgba(0, 0, 0, 0.06);
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --shadow-soft: 0 20px 40px -10px rgba(0, 0, 0, 0.05);
 }
 
-/* 英雄区域 */
-.hero-section {
+.modern-home {
   position: relative;
-  background:
-    radial-gradient(
-      1200px 600px at 20% 0%,
-      var(--el-color-primary-light-5) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      1000px 500px at 80% 0%,
-      var(--el-color-primary-light-3) 0%,
-      transparent 60%
-    ),
-    linear-gradient(
-      135deg,
-      var(--el-color-primary) 0%,
-      var(--el-color-primary-light-3) 100%
-    );
-  color: white;
-  padding: 100px 20px;
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  overflow-x: hidden;
+}
+
+/* --- Ambient Background (氛围背景) --- */
+.ambient-background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.noise-overlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+}
+
+.glow-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.4;
+}
+
+.orb-1 {
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, #E0F2FE 0%, transparent 70%);
+  top: -100px;
+  left: -100px;
+  animation: float 20s infinite ease-in-out;
+}
+
+.orb-2 {
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, #F3E8FF 0%, transparent 70%);
+  bottom: -100px;
+  right: -100px;
+  animation: float 25s infinite ease-in-out reverse;
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(30px, 50px); }
+}
+
+/* --- Hero Section (大字报风格) --- */
+.hero-wrapper {
+  position: relative;
+  z-index: 1;
+  padding: 120px 20px 80px;
+  display: flex;
+  justify-content: center;
+}
+
+.hero-text-group {
+  text-align: center;
+  max-width: 800px;
+}
+
+.display-title {
+  font-size: clamp(3rem, 8vw, 6rem); /* 响应式超大字体 */
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 0.95;
+  margin-bottom: 2rem;
+  color: var(--text-primary);
+}
+
+.gradient-text {
+  background: linear-gradient(120deg, #111, #555);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-desc {
+  font-size: 1.25rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 3rem;
+  font-weight: 400;
+}
+
+.hero-btn-group {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+}
+
+.btn-primary {
+  background: #111;
+  color: #fff;
+  border: none;
+  padding: 14px 32px;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-primary:hover {
+  transform: scale(1.05);
+}
+
+.btn-text {
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: var(--text-primary);
+  padding: 14px 32px;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-text:hover {
+  background: #fff;
+  border-color: #000;
+}
+
+/* --- Layout Grid (主布局) --- */
+.layout-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px 80px;
+  position: relative;
+  z-index: 2;
+}
+
+.main-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px; /* 左宽右窄 */
+  gap: 60px;
+  align-items: start;
+}
+
+/* --- Content Flow (左侧内容) --- */
+.content-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
+}
+
+.network-panel-wrapper {
+  padding: 24px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: var(--shadow-soft);
+  position: relative;
+}
+
+.panel-label {
+  position: absolute;
+  top: 16px;
+  left: 20px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
+  font-weight: 600;
+}
+
+.section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 24px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.section-head h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.link-hover {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  position: relative;
+}
+
+.link-hover::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0%;
+  height: 1px;
+  background: currentColor;
+  transition: width 0.3s;
+}
+
+.link-hover:hover::after {
+  width: 100%;
+}
+
+/* Featured Posts Grid */
+.featured-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.featured-item {
+  transition: transform 0.3s ease;
+}
+
+.featured-item:hover {
+  transform: translateY(-4px);
+}
+
+/* Latest Feed */
+.feed-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0; /* 紧凑列表 */
+}
+
+.feed-item-wrapper {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--border-light);
+  transition: background 0.2s;
+}
+
+.feed-item-wrapper:first-child {
+  padding-top: 0;
+}
+
+.load-more-wrapper {
+  margin-top: 40px;
   text-align: center;
 }
 
-.hero-content {
-  max-width: 800px;
-  margin: 0 auto;
+.minimal-btn {
+  background: transparent;
+  border: 1px solid var(--border-light);
+  color: var(--text-secondary);
+  padding: 10px 24px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  transition: all 0.2s;
 }
 
-.hero-title {
-  font-size: 3.25rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  margin-bottom: 1.2rem;
-  background: linear-gradient(45deg, #fff, #eaeaea);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.minimal-btn:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
 }
 
-.hero-subtitle {
-  font-size: 1.15rem;
-  margin-bottom: 2.2rem;
-  opacity: 0.95;
+/* --- Sidebar (侧边栏) --- */
+.sidebar-col {
+  height: 100%;
 }
 
-.hero-actions {
+.sticky-wrapper {
+  position: sticky;
+  top: 2rem;
   display: flex;
-  gap: 1rem;
-  justify-content: center;
-}
-.hero-primary {
-  border: none;
-  padding: 14px 22px;
-  border-radius: 10px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.15);
-}
-.hero-secondary {
-  padding: 14px 22px;
-  border-radius: 10px;
-  backdrop-filter: blur(8px);
+  flex-direction: column;
+  gap: 32px;
 }
 
-/* 主要内容区域 */
-.main-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 40px 20px;
+.widget-box {
+  background: transparent;
 }
 
-.content-wrapper {
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 40px;
-}
-
-.main-content {
-  min-height: 600px;
-}
-.network-highlight {
+.widget-header {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-tertiary);
   margin-bottom: 16px;
+  font-weight: 700;
 }
 
-/* 章节样式 */
-.section-header {
+/* 统计矩阵 */
+.stats-matrix {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.stat-cell {
+  background: #fff;
+  padding: 16px;
+  border-radius: 12px;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-  padding-bottom: 12px;
-  border-bottom: 2px solid var(--el-border-color-lighter);
+  flex-direction: column;
+  align-items: flex-start;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+  transition: transform 0.2s;
 }
 
-.section-header h2 {
+.stat-cell:hover {
+  transform: translateY(-2px);
+}
+
+.stat-cell.highlight {
+  background: #111;
+}
+
+.stat-cell.highlight .stat-num,
+.stat-cell.highlight .stat-meta {
+  color: #fff;
+}
+
+.stat-num {
   font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--el-text-color-primary);
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.stat-meta {
+  font-size: 0.75rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+/* 趋势列表 */
+.trend-list {
+  list-style: none;
+  padding: 0;
   margin: 0;
 }
 
-.more-link {
-  color: var(--el-color-primary);
-  text-decoration: none;
-  font-size: 14px;
-}
-
-.more-link:hover {
-  text-decoration: underline;
-}
-
-/* 文章网格 */
-.posts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 28px;
-  margin-bottom: 40px;
-}
-
-.posts-list {
+.trend-item {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.load-more {
-  text-align: center;
-  margin-top: 24px;
-}
-
-/* 侧边栏 */
-.sidebar {
-  position: sticky;
-  top: 100px;
-  height: fit-content;
-}
-
-.sidebar-section {
-  background: var(--el-bg-color);
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 14px;
-  padding: 20px;
-  margin-bottom: 24px;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
-}
-
-.sidebar-section h3 {
-  margin: 0 0 16px 0;
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--el-text-color-primary);
-}
-
-/* 热门文章 */
-.hot-posts {
-  display: flex;
-  flex-direction: column;
+  align-items: baseline;
   gap: 12px;
-}
-
-.hot-post-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 0;
+  padding: 10px 0;
   cursor: pointer;
-  border-bottom: 1px solid var(--el-border-color-lighter);
+  border-bottom: 1px dashed var(--border-light);
+  transition: opacity 0.2s;
 }
 
-.hot-post-item:hover {
-  background-color: var(--el-fill-color-light);
-  margin: 0 -20px;
-  padding: 8px 20px;
-  border-radius: 8px;
+.trend-item:hover {
+  opacity: 0.7;
 }
 
-.hot-post-item:last-child {
-  border-bottom: none;
+.trend-rank {
+  font-family: 'Times New Roman', serif;
+  font-style: italic;
+  font-size: 1.2rem;
+  color: var(--text-tertiary);
+  width: 20px;
 }
 
-.post-rank {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 24px;
-  height: 24px;
-  background: var(--el-color-primary);
-  color: white;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: bold;
-  flex-shrink: 0;
-}
-
-.post-title {
-  flex: 1;
-  font-size: 14px;
-  color: var(--el-text-color-primary);
+.trend-title {
+  font-size: 0.95rem;
+  font-weight: 500;
   line-height: 1.4;
 }
 
 /* 标签云 */
-.tag-cloud {
+.tags-flex {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.tag-item {
+.tag-pill {
+  font-size: 0.85rem;
+  padding: 6px 14px;
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: 100px;
+  color: var(--text-secondary);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all 0.2s;
 }
 
-.tag-item:hover {
-  transform: scale(1.1);
+.tag-pill:hover {
+  background: #111;
+  color: #fff;
+  border-color: #111;
 }
 
-/* 统计信息 */
-.stats-info {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.stat-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid var(--el-border-color-lighter);
-}
-
-.stat-item:last-child {
-  border-bottom: none;
-}
-
-.stat-label {
-  color: var(--el-text-color-secondary);
-  font-size: 14px;
-}
-
-.stat-value {
-  color: var(--el-text-color-primary);
-  font-weight: 600;
-  font-size: 14px;
-}
-
-/* 响应式设计 */
+/* --- Responsive --- */
 @media (max-width: 1024px) {
-  .content-wrapper {
+  .main-grid {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 40px;
+  }
+  
+  .hero-wrapper {
+    padding-top: 80px;
   }
 
-  .sidebar {
+  .display-title {
+    font-size: 3.5rem;
+  }
+  
+  .sticky-wrapper {
     position: static;
-    order: -1;
-  }
-
-  .sidebar-section {
-    margin-bottom: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   }
 }
 
-@media (max-width: 768px) {
-  .hero-section {
-    padding: 60px 20px;
+@media (max-width: 600px) {
+  .display-title {
+    font-size: 2.5rem;
   }
-
-  .hero-title {
-    font-size: 2rem;
-  }
-
-  .hero-subtitle {
+  
+  .hero-desc {
     font-size: 1rem;
   }
-
-  .hero-actions {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .main-container {
-    padding: 20px 16px;
-  }
-
-  .posts-grid {
+  
+  .sticky-wrapper {
     grid-template-columns: 1fr;
-    gap: 16px;
   }
-
-  .section-header {
+  
+  .btn-primary, .btn-text {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .hero-btn-group {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
-  }
-
-  .section-header h2 {
-    font-size: 1.25rem;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero-section {
-    padding: 40px 16px;
-  }
-
-  .hero-title {
-    font-size: 1.5rem;
-  }
-
-  .main-container {
-    padding: 16px;
+    width: 100%;
   }
 }
 </style>
