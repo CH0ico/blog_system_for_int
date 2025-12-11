@@ -72,16 +72,16 @@ db.init_app(app)
 jwt = JWTManager(app)
 mail = Mail(app)
 
-# CORS初始化
+# CORS初始化 - 允许所有来源访问
 cors = CORS(app, resources={
     r"/api/*": {
-        "origins": app.config['CORS_ORIGINS'],
-        "supports_credentials": True
+        "origins": "*",
+        "supports_credentials": False
     }
 })
 
-# SocketIO初始化
-socketio = SocketIO(app, cors_allowed_origins=app.config['CORS_ORIGINS'], logger=True, engineio_logger=True)
+# SocketIO初始化 - 允许所有来源访问
+socketio = SocketIO(app, cors_allowed_origins="*", logger=True, engineio_logger=True)
 
 # 注册蓝图
 app.register_blueprint(posts_bp, url_prefix='/api/posts')
