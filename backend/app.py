@@ -54,7 +54,7 @@ app.config['PORT'] = int(os.environ.get('PORT', '5001'))
 
 # CORS配置
 app.config['CORS_ORIGINS'] = os.environ.get('CORS_ORIGINS', 'http://localhost:3000,http://127.0.0.1:3000').split(',')
-app.config['CORS_SUPPORTS_CREDENTIALS'] = True
+app.config['CORS_SUPPORTS_CREDENTIALS'] = False
 
 # 邮件配置
 app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
@@ -372,12 +372,10 @@ def create_post():
     title = data.get('title', '').strip()
     content = data.get('content', '').strip()
     summary = data.get('summary', '').strip()
-    return jsonify({
-        'post': post.to_dict()
-    })
     tags = data.get('tags', [])
     categories = data.get('categories', [])
     status = data.get('status', 'draft')
+    allow_comments = data.get('allow_comments', True)
     
     if not title or not content:
         return jsonify({'message': '标题和内容不能为空', 'error': 'missing_fields'}), 400

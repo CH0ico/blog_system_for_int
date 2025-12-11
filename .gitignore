@@ -10,3 +10,21 @@ frontend/.env
 instance/*
 backend/instance/*
 backend/.env
+
+# Python虚拟环境
+venv/
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
