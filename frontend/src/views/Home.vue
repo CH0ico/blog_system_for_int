@@ -28,6 +28,9 @@
       <div class="content-wrapper">
         <!-- 左侧内容 -->
         <div class="main-content">
+          <section class="network-highlight">
+            <NetworkPanel />
+          </section>
           <!-- 推荐文章 -->
           <section v-if="featuredPosts.length > 0" class="featured-posts">
             <div class="section-header">
@@ -130,6 +133,7 @@
       </div>
     </div>
   </div>
+  <LittleHelper />
 </template>
 
 <script setup>
@@ -140,6 +144,8 @@ import { useSocketStore } from "@/stores/socket";
 import PostCard from "@/components/posts/PostCard.vue";
 import PostItem from "@/components/posts/PostItem.vue";
 import UserCard from "@/components/user/UserCard.vue";
+import NetworkPanel from "@/components/monitor/NetworkPanel.vue";
+import LittleHelper from "@/components/interactive/LittleHelper.vue";
 
 const authStore = useAuthStore();
 const postsStore = usePostsStore();
@@ -347,6 +353,9 @@ onMounted(async () => {
 
 .main-content {
   min-height: 600px;
+}
+.network-highlight {
+  margin-bottom: 16px;
 }
 
 /* 章节样式 */

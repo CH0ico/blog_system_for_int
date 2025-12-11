@@ -351,29 +351,17 @@ def get_post(post_id):
     post = Post.query.get_or_404(post_id)
     
     if post.status != 'published':
-        # 检查是否有权限查看草稿
         current_user_id = get_jwt_identity() if request.headers.get('Authorization') else None
+        # 检查是否有权限查看草稿
         if not current_user_id or post.author_id != current_user_id:
             return jsonify({'message': '文章不存在或无权限查看', 'error': 'access_denied'}), 404
     
+    # 增加浏览次数
     # 增加浏览次数
     post.increment_view_count()
     
     # 记录浏览日志
     user_id = get_jwt_identity() if request.headers.get('Authorization') else None
-    view_log = ViewLog(
-        user_id=user_id,
-        post_id=post.id,
-        ip_address=request.remote_addr,
-        user_agent=request.headers.get('User-Agent', '')[:500],
-        referer=request.headers.get('Referer', '')[:500]
-    )
-    db.session.add(view_log)
-    db.session.commit()
-    
-    return jsonify({
-        'post': post.to_dict()
-    })
 
 @app.route('/api/posts', methods=['POST'])
 @jwt_required()
@@ -384,7 +372,9 @@ def create_post():
     title = data.get('title', '').strip()
     content = data.get('content', '').strip()
     summary = data.get('summary', '').strip()
-    allow_comments = data.get('allow_comments', True)
+    return jsonify({
+        'post': post.to_dict()
+    })
     tags = data.get('tags', [])
     categories = data.get('categories', [])
     status = data.get('status', 'draft')
