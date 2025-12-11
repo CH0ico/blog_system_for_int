@@ -1,87 +1,81 @@
 <template>
-  <div class="login-page">
-    <div class="container">
-      <div class="login-card">
-        <div class="login-header">
-          <h1>登录</h1>
-          <p>欢迎回来，请输入您的账号信息</p>
+  <div class="cassette-auth-terminal">
+    <!-- CRT 屏幕特效 -->
+    <div class="crt-overlay">
+      <div class="scanlines"></div>
+      <div class="noise"></div>
+    </div>
+
+    <div class="auth-console">
+      <div class="console-header">
+        <h1 class="console-title">AUTHENTICATION TERMINAL</h1>
+        <p class="console-subtitle">SYSTEM ACCESS PROTOCOL</p>
+      </div>
+
+      <div class="console-form">
+        <div class="form-group">
+          <label class="form-label">USERNAME / EMAIL</label>
+          <input
+            v-model="loginForm.username_or_email"
+            type="text"
+            class="form-input"
+            placeholder="ENTER USER CREDENTIALS"
+            @keyup.enter="handleLogin"
+          />
         </div>
 
-        <el-form
-          ref="loginFormRef"
-          :model="loginForm"
-          :rules="loginRules"
-          class="login-form"
-          @submit.prevent="handleLogin"
-        >
-          <el-form-item prop="username_or_email">
-            <el-input
-              v-model="loginForm.username_or_email"
-              placeholder="用户名或邮箱"
-              size="large"
-            >
-              <template #prefix>
-                <el-icon><User /></el-icon>
-              </template>
-            </el-input>
-          </el-form-item>
-
-          <el-form-item prop="password">
-            <el-input
-              v-model="loginForm.password"
-              placeholder="密码"
-              type="password"
-              size="large"
-              show-password
-            >
-              <template #prefix>
-                <el-icon><Lock /></el-icon>
-              </template>
-            </el-input>
-          </el-form-item>
-
-          <el-form-item>
-            <div class="form-options">
-              <el-checkbox v-model="loginForm.remember">记住我</el-checkbox>
-              <router-link to="/forgot-password" class="forgot-link">
-                忘记密码？
-              </router-link>
-            </div>
-          </el-form-item>
-
-          <el-form-item>
-            <el-button
-              type="primary"
-              size="large"
-              :loading="loading"
-              class="login-button"
-              @click="handleLogin"
-            >
-              登录
-            </el-button>
-          </el-form-item>
-        </el-form>
-
-        <div class="login-footer">
-          <p>还没有账号？<router-link to="/register">立即注册</router-link></p>
+        <div class="form-group">
+          <label class="form-label">ACCESS CODE</label>
+          <input
+            v-model="loginForm.password"
+            type="password"
+            class="form-input"
+            placeholder="ENTER SECURITY CODE"
+            @keyup.enter="handleLogin"
+          />
         </div>
+
+        <div class="form-options">
+          <label class="checkbox-container">
+            <input
+              v-model="loginForm.remember"
+              type="checkbox"
+              class="form-checkbox"
+            />
+            <span class="checkbox-label">REMEMBER SESSION</span>
+          </label>
+          <router-link to="/forgot-password" class="console-link">
+            ACCESS RECOVERY
+          </router-link>
+        </div>
+
+        <button class="console-btn" :disabled="loading" @click="handleLogin">
+          <span v-if="!loading">EXECUTE LOGIN</span>
+          <span v-else>PROCESSING...</span>
+        </button>
+      </div>
+
+      <div class="console-footer">
+        <p>
+          NO SYSTEM ACCOUNT?
+          <router-link to="/register" class="console-link"
+            >INITIATE REGISTRATION</router-link
+          >
+        </p>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive } from "vue";
+import { ref, reactive, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
-import { ElMessage } from "element-plus";
-import { User, Lock } from "@element-plus/icons-vue";
 import { useAuthStore } from "@/stores/auth";
 
 const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 
-const loginFormRef = ref();
 const loading = ref(false);
 
 const loginForm = reactive({
@@ -90,35 +84,75 @@ const loginForm = reactive({
   remember: false,
 });
 
-const loginRules = {
-  username_or_email: [
-    { required: true, message: "请输入用户名或邮箱", trigger: "blur" },
-    { min: 3, message: "用户名至少3个字符", trigger: "blur" },
-  ],
-  password: [
-    { required: true, message: "请输入密码", trigger: "blur" },
-    { min: 6, message: "密码长度至少为6位", trigger: "blur" },
-  ],
+// 模拟机械音效
+const playMechanicalSound = () => {
+  // 创建机械按键音效
+  const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+
+  oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+  oscillator.frequency.exponentialRampToValueAtTime(
+    400,
+    audioContext.currentTime + 0.1,
+  );
+
+  gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(
+    0.01,
+    audioContext.currentTime + 0.1,
+  );
+
+  oscillator.start(audioContext.currentTime);
+  oscillator.stop(audioContext.currentTime + 0.1);
 };
 
+// 添加按钮点击音效
+const addClickSound = () => {
+  const buttons = document.querySelectorAll(".console-btn, .console-link");
+  buttons.forEach((button) => {
+    button.addEventListener("click", playMechanicalSound);
+  });
+};
+
+// 组件挂载完成后添加音效
+onMounted(() => {
+  addClickSound();
+});
+
 const handleLogin = async () => {
-  if (!loginFormRef.value) return;
+  // 基础验证
+  if (!loginForm.username_or_email.trim()) {
+    alert("USERNAME/EMAIL REQUIRED");
+    return;
+  }
+  if (!loginForm.password.trim()) {
+    alert("ACCESS CODE REQUIRED");
+    return;
+  }
+  if (loginForm.password.length < 6) {
+    alert("ACCESS CODE MINIMUM 6 CHARACTERS");
+    return;
+  }
 
   try {
-    await loginFormRef.value.validate();
     loading.value = true;
 
     await authStore.login(loginForm);
 
-    ElMessage.success("登录成功！");
+    alert("AUTHENTICATION SUCCESSFUL");
 
     // 重定向到之前访问的页面或首页
     const redirect = route.query.redirect || "/";
     router.push(redirect);
+
+    // 添加机械音效模拟
+    playMechanicalSound();
   } catch (error) {
-    if (error !== false) {
-      ElMessage.error(error.message || "登录失败，请检查您的账号信息");
-    }
+    alert(error.message || "AUTHENTICATION FAILED - CHECK CREDENTIALS");
   } finally {
     loading.value = false;
   }
@@ -126,92 +160,412 @@ const handleLogin = async () => {
 </script>
 
 <style scoped>
-.login-page {
+.cassette-auth-terminal {
+  position: relative;
   min-height: 100vh;
+  background-color: var(--color-eggshell);
+  color: var(--color-dark-black);
+  font-family: "Courier New", monospace;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 20px;
+  overflow: hidden;
+  animation: terminalBoot 0.5s ease-out;
 }
 
-.container {
+@keyframes terminalBoot {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.02) translateY(-5px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* CRT 屏幕特效 */
+.crt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
   width: 100%;
-  max-width: 400px;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
 }
 
-.login-card {
-  background: white;
-  border-radius: 12px;
+.scanlines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(21, 21, 21, 0.1) 0px,
+    rgba(21, 21, 21, 0.1) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  animation: scanlines 8s linear infinite;
+}
+
+.noise {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  animation: noise 0.5s steps(10) infinite;
+}
+
+@keyframes scanlines {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(10px);
+  }
+}
+
+@keyframes noise {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  10% {
+    transform: translate(-5%, -5%);
+  }
+  20% {
+    transform: translate(-10%, 5%);
+  }
+  30% {
+    transform: translate(5%, -10%);
+  }
+  40% {
+    transform: translate(-5%, 15%);
+  }
+  50% {
+    transform: translate(-10%, 5%);
+  }
+  60% {
+    transform: translate(15%, 0);
+  }
+  70% {
+    transform: translate(0, 10%);
+  }
+  80% {
+    transform: translate(-15%, 0);
+  }
+  90% {
+    transform: translate(10%, 5%);
+  }
+}
+
+.auth-console {
+  position: relative;
+  z-index: 2;
+  background: var(--color-eggshell);
+  border: 4px solid var(--color-dark-black);
+  box-shadow: 6px 6px 0 var(--color-dark-black);
   padding: 40px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  max-width: 400px;
+  width: 90%;
 }
 
-.login-header {
+.console-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: 30px;
+  border-bottom: 2px solid var(--color-dark-black);
+  padding-bottom: 20px;
 }
 
-.login-header h1 {
-  margin: 0 0 8px 0;
-  font-size: 2rem;
-  font-weight: 600;
-  color: #333;
+.console-title {
+  margin: 0 0 10px 0;
+  font-size: 1.5rem;
+  font-weight: 900;
+  color: var(--color-dark-black);
+  letter-spacing: 2px;
+  text-shadow: 3px 3px 0 var(--color-warning-orange);
 }
 
-.login-header p {
+.console-subtitle {
   margin: 0;
-  color: #666;
-  font-size: 14px;
+  font-size: 12px;
+  color: var(--color-dark-black);
+  opacity: 0.7;
+  letter-spacing: 1px;
+  text-transform: uppercase;
 }
 
-.login-form {
-  margin-bottom: 24px;
+.console-form {
+  margin-bottom: 30px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--color-dark-black);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 3px solid var(--color-dark-black);
+  background: var(--color-eggshell);
+  color: var(--color-dark-black);
+  font-family: "Courier New", monospace;
+  font-size: 14px;
+  font-weight: 600;
+  outline: none;
+  transition: all 0.1s ease;
+  box-shadow: 2px 2px 0 var(--color-dark-black);
+}
+
+.form-input:focus {
+  box-shadow: 4px 4px 0 var(--color-dark-black);
+  transform: translate(-2px, -2px);
+  background: rgba(255, 107, 0, 0.1);
+  animation: inputFocus 0.3s ease-out;
+}
+
+@keyframes inputFocus {
+  0% {
+    box-shadow: 2px 2px 0 var(--color-dark-black);
+    transform: translate(0, 0);
+  }
+  50% {
+    box-shadow: 6px 6px 0 var(--color-dark-black);
+    transform: translate(-4px, -4px);
+  }
+  100% {
+    box-shadow: 4px 4px 0 var(--color-dark-black);
+    transform: translate(-2px, -2px);
+  }
+}
+
+.form-input::placeholder {
+  color: var(--color-dark-black);
+  opacity: 0.5;
+  font-weight: 400;
 }
 
 .form-options {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 100%;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
-.forgot-link {
-  color: #409eff;
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.form-checkbox {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--color-dark-black);
+  appearance: none;
+  background: var(--color-eggshell);
+  cursor: pointer;
+  position: relative;
+}
+
+.form-checkbox:checked {
+  background: var(--color-warning-orange);
+}
+
+.form-checkbox:checked::after {
+  content: "✓";
+  position: absolute;
+  top: -2px;
+  left: 2px;
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--color-dark-black);
+}
+
+.checkbox-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-dark-black);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.console-link {
+  color: var(--color-dark-black);
   text-decoration: none;
-  font-size: 14px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  border-bottom: 2px solid var(--color-warning-orange);
+  transition: all 0.1s ease;
 }
 
-.forgot-link:hover {
-  text-decoration: underline;
+.console-link:hover {
+  color: var(--color-warning-orange);
+  border-bottom-color: var(--color-dark-black);
 }
 
-.login-button {
+.console-btn {
   width: 100%;
-}
-
-.login-footer {
-  text-align: center;
-  color: #666;
+  padding: 15px 20px;
+  border: 3px solid var(--color-dark-black);
+  background: var(--color-eggshell);
+  color: var(--color-dark-black);
+  font-family: "Courier New", monospace;
   font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  box-shadow: 3px 3px 0 var(--color-dark-black);
 }
 
-.login-footer a {
-  color: #409eff;
-  text-decoration: none;
+.console-btn:hover {
+  box-shadow: 5px 5px 0 var(--color-dark-black);
+  transform: translate(-2px, -2px);
+  background: var(--color-warning-orange);
+  animation: buttonClick 0.2s ease-out;
 }
 
-.login-footer a:hover {
-  text-decoration: underline;
+@keyframes buttonClick {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(-2px, -2px) scale(0.95);
+  }
+  100% {
+    transform: translate(-2px, -2px) scale(1);
+  }
+}
+
+/* 响应式布局优化 */
+@media (max-width: 768px) {
+  .auth-console {
+    padding: 30px 20px;
+    max-width: 90%;
+  }
+
+  .console-title {
+    font-size: 1.2rem;
+  }
+
+  .console-form {
+    margin-bottom: 20px;
+  }
+
+  .form-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .console-footer {
+    text-align: center;
+  }
 }
 
 @media (max-width: 480px) {
-  .login-card {
+  .auth-console {
+    padding: 20px 15px;
+    border-width: 2px;
+    box-shadow: 3px 3px 0 var(--color-dark-black);
+  }
+
+  .console-title {
+    font-size: 1rem;
+    letter-spacing: 1px;
+  }
+
+  .form-input {
+    padding: 10px 12px;
+    font-size: 13px;
+    border-width: 2px;
+    box-shadow: 1px 1px 0 var(--color-dark-black);
+  }
+
+  .console-btn {
+    padding: 12px 15px;
+    font-size: 13px;
+    border-width: 2px;
+    box-shadow: 2px 2px 0 var(--color-dark-black);
+  }
+
+  .form-label {
+    font-size: 11px;
+  }
+
+  .checkbox-label,
+  .console-link {
+    font-size: 11px;
+  }
+}
+
+.console-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: 3px 3px 0 var(--color-dark-black);
+}
+
+.console-footer {
+  text-align: center;
+  padding-top: 20px;
+  border-top: 2px solid var(--color-dark-black);
+  color: var(--color-dark-black);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.console-footer p {
+  margin: 0;
+}
+
+/* 响应式设计 */
+@media (max-width: 480px) {
+  .auth-console {
     padding: 30px 20px;
   }
 
-  .login-header h1 {
-    font-size: 1.5rem;
+  .console-title {
+    font-size: 1.2rem;
+  }
+
+  .form-options {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+
+  .console-btn {
+    padding: 12px 15px;
+    font-size: 12px;
   }
 }
 </style>

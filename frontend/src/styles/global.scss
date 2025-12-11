@@ -1,0 +1,305 @@
+// 磁带未来主义全局样式
+@import './cassette-futurism.scss';
+
+// 全局变量覆盖
+:root {
+  // Element Plus 变量覆盖
+  --el-color-primary: #{map-get($cassette-colors, 'warning-orange')};
+  --el-color-success: #{map-get($cassette-colors, 'tech-green')};
+  --el-color-warning: #{map-get($cassette-colors, 'warning-orange')};
+  --el-color-danger: #{map-get($cassette-colors, 'accent-red')};
+  --el-color-info: #{map-get($cassette-colors, 'grid-gray')};
+  
+  // 背景色
+  --el-bg-color: #{map-get($cassette-colors, 'egg-white')};
+  --el-bg-color-page: #{map-get($cassette-colors, 'egg-white')};
+  --el-bg-color-overlay: #{map-get($cassette-colors, 'egg-white')};
+  
+  // 文字颜色
+  --el-text-color-primary: #{map-get($cassette-colors, 'deep-black')};
+  --el-text-color-regular: #{map-get($cassette-colors, 'deep-black')};
+  --el-text-color-secondary: #{map-get($cassette-colors, 'grid-gray')};
+  
+  // 边框颜色
+  --el-border-color: #{map-get($cassette-colors, 'deep-black')};
+  --el-border-color-light: #{map-get($cassette-colors, 'grid-gray')};
+  
+  // 填充
+  --el-border-radius-base: 0;
+  --el-border-radius-small: 0;
+  --el-border-radius-round: 0;
+  
+  // 字体
+  --el-font-family: #{map-get($cassette-fonts, 'body')};
+  --el-font-weight-primary: 600;
+}
+
+// 全局样式重置
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  font-family: map-get($cassette-fonts, 'body');
+  background: map-get($cassette-colors, 'egg-white');
+  color: map-get($cassette-colors, 'deep-black');
+  @include grid-background(20px, rgba(21, 21, 21, 0.05));
+}
+
+// 磁带未来主义按钮样式
+.cassette-btn {
+  @include mechanical-button;
+  padding: 12px 24px;
+  font-size: 14px;
+  text-decoration: none;
+  display: inline-block;
+  
+  &.warning {
+    background: map-get($cassette-colors, 'warning-orange');;
+    color: map-get($cassette-colors, 'egg-white');
+  }
+  
+  &.tech {
+    background: map-get($cassette-colors, 'tech-green');
+    color: map-get($cassette-colors, 'deep-black');
+  }
+  
+  &.danger {
+    background: map-get($cassette-colors, 'accent-red');
+    color: map-get($cassette-colors, 'egg-white');
+  }
+}
+
+// 磁带风格卡片
+.cassette-card {
+  @include cassette-card;
+  margin-bottom: 20px;
+  
+  .card-header {
+    font-family: map-get($cassette-fonts, 'mono');
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: map-get($cassette-borders, 'medium-black');
+  }
+}
+
+// 工业风格输入框
+.cassette-input {
+  @include industrial-input;
+  width: 100%;
+  font-size: 14px;
+  
+  &::placeholder {
+    color: map-get($cassette-colors, 'grid-gray');
+    font-family: map-get($cassette-fonts, 'mono');
+  }
+}
+
+// 警告条纹区域
+.hazard-stripes {
+  @include hazard-stripes;
+  padding: 10px;
+  margin: 20px 0;
+  
+  .hazard-content {
+    background: map-get($cassette-colors, 'egg-white');
+    border: map-get($cassette-borders, 'thick-black');
+    padding: 15px;
+    font-family: map-get($cassette-fonts, 'mono');
+    font-weight: bold;
+  }
+}
+
+// 故障文字
+.glitch-text {
+  @include glitch-text;
+}
+
+// 打字机效果
+.typewriter {
+  @include typewriter-effect;
+}
+
+// CRT 效果容器
+.crt-container {
+  @include crt-scanlines;
+  position: relative;
+  background: map-get($cassette-colors, 'deep-black');
+  color: map-get($cassette-colors, 'egg-white');
+  padding: 20px;
+  border: map-get($cassette-borders, 'thick-black');
+  
+  .crt-content {
+    position: relative;
+    z-index: 3;
+  }
+}
+
+// 磁带轮
+.cassette-wheel {
+  width: 40px;
+  height: 40px;
+  border: 3px solid map-get($cassette-colors, 'deep-black');
+  border-radius: 50%;
+  position: relative;
+  background: map-get($cassette-colors, 'tape-brown');
+  @include cassette-wheel-rotate;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 20px;
+    height: 20px;
+    background: map-get($cassette-colors, 'deep-black');
+    border-radius: 50%;
+  }
+}
+
+// 标签样式
+.tech-tag {
+  display: inline-block;
+  background: map-get($cassette-colors, 'warning-orange');;
+  color: map-get($cassette-colors, 'egg-white');
+  padding: 4px 8px;
+  margin: 2px;
+  font-family: map-get($cassette-fonts, 'mono');
+  font-size: 12px;
+  font-weight: bold;
+  text-transform: uppercase;
+  border: map-get($cassette-borders, 'thin-black');
+  box-shadow: map-get($cassette-shadows, 'hard-black');
+}
+
+// 响应式网格
+.cassette-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 20px;
+  
+  @include respond-to('mobile') {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding: 15px;
+  }
+}
+
+// Element Plus 组件样式覆盖
+.el-button {
+  @include mechanical-button;
+  border-radius: 0 !important;
+  
+  &.el-button--primary {
+    background: map-get($cassette-colors, 'warning-orange');;
+    border-color: map-get($cassette-colors, 'deep-black');
+    color: map-get($cassette-colors, 'egg-white');
+  }
+  
+  &.el-button--success {
+    background: map-get($cassette-colors, 'tech-green');
+    border-color: map-get($cassette-colors, 'deep-black');
+    color: map-get($cassette-colors, 'deep-black');
+  }
+  
+  &.el-button--danger {
+    background: map-get($cassette-colors, 'accent-red');
+    border-color: map-get($cassette-colors, 'deep-black');
+    color: map-get($cassette-colors, 'egg-white');
+  }
+}
+
+.el-input {
+  .el-input__wrapper {
+    @include industrial-input;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+}
+
+.el-card {
+  border: map-get($cassette-borders, 'thick-black');
+  border-radius: 0 !important;
+  box-shadow: map-get($cassette-shadows, 'hard-black');
+  background: map-get($cassette-colors, 'egg-white');
+}
+
+.el-menu {
+  background: map-get($cassette-colors, 'egg-white');
+  border-bottom: map-get($cassette-borders, 'thick-black');
+  
+  .el-menu-item {
+    font-family: map-get($cassette-fonts, 'mono');
+    font-weight: bold;
+    color: map-get($cassette-colors, 'deep-black');
+    border-right: map-get($cassette-borders, 'thin-black');
+    
+    &:hover {
+      background: map-get($cassette-colors, 'warning-orange');;
+      color: map-get($cassette-colors, 'egg-white');
+    }
+    
+    &.is-active {
+      background: map-get($cassette-colors, 'deep-black');
+      color: map-get($cassette-colors, 'egg-white');
+    }
+  }
+}
+
+// 滚动条样式
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: map-get($cassette-colors, 'egg-white');
+  border: map-get($cassette-borders, 'thin-black');
+}
+
+::-webkit-scrollbar-thumb {
+  background: map-get($cassette-colors, 'warning-orange');;
+  border: map-get($cassette-borders, 'thin-black');
+  
+  &:hover {
+    background: darken(map-get($cassette-colors, 'warning-orange'), 10%);
+  }
+}
+
+// 加载动画
+.loading-cassette {
+  display: inline-block;
+  width: 50px;
+  height: 30px;
+  background: map-get($cassette-colors, 'tape-brown');
+  border: map-get($cassette-borders, 'thick-black');
+  position: relative;
+  
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid map-get($cassette-colors, 'deep-black');
+    border-radius: 50%;
+    top: 50%;
+    transform: translateY(-50%);
+    @include cassette-wheel-rotate;
+  }
+  
+  &::before {
+    left: 5px;
+  }
+  
+  &::after {
+    right: 5px;
+    animation-direction: reverse;
+  }
+}

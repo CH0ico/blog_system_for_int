@@ -248,6 +248,27 @@ export const usePostsStore = defineStore("posts", () => {
     }
   };
 
+  // 搜索文章
+  const searchPosts = async (params = {}) => {
+    loading.value = true;
+    try {
+      const response = await api.get("/posts/search", { params });
+      const { posts: postsData, pagination: paginationData } = response.data;
+      
+      posts.value = postsData;
+      pagination.value = paginationData;
+      
+      return postsData;
+    } catch (error) {
+      const message = error.response?.data?.message || "搜索文章失败";
+      toast.error(message);
+      console.error("Search posts error:", error);
+      return [];
+    } finally {
+      loading.value = false;
+    }
+  };
+
   // 加载更多文章
   const loadMorePosts = async (params = {}) => {
     if (hasMorePosts.value && !loading.value) {
@@ -298,6 +319,7 @@ export const usePostsStore = defineStore("posts", () => {
     fetchFeaturedPosts,
     fetchArchives,
     getSearchSuggestions,
+    searchPosts,
     loadMorePosts,
     clearPosts,
     setCurrentPost,

@@ -1,0 +1,258 @@
+// 磁带未来主义设计系统
+// 参考 Project Echo 的视觉风格
+
+// 色彩系统 - 高对比色
+$cassette-colors: (
+  'warning-orange': #F25C05,
+  'egg-white': #EFEFE5,
+  'deep-black': #151515,
+  'grid-gray': #2A2A2A,
+  'accent-red': #FF3333,
+  'tech-green': #00FF41,
+  'tape-brown': #8B4513,
+  'metal-silver': #C0C0C0
+);
+
+// 边框和阴影系统 - 硬边框与硬阴影
+$cassette-borders: (
+  'thick-black': 3px solid #151515,
+  'medium-black': 2px solid #151515,
+  'thin-black': 1px solid #151515,
+  'warning-orange': 2px solid #F25C05
+);
+
+$cassette-shadows: (
+  'hard-black': 4px 4px 0 #151515,
+  'hard-warning': 4px 4px 0 #F25C05,
+  'hard-tech': 4px 4px 0 #00FF41,
+  'inset-hard': inset 2px 2px 0 #151515
+);
+
+// 字体系统
+$cassette-fonts: (
+  'mono': 'Courier New, Monaco, Menlo, monospace',
+  'display': 'Impact, Arial Black, sans-serif',
+  'body': 'Consolas, Monaco, monospace'
+);
+
+// 网格背景
+@mixin grid-background($size: 20px, $color: rgba(21, 21, 21, 0.1)) {
+  background-image: 
+    linear-gradient($color 1px, transparent 1px),
+    linear-gradient(90deg, $color 1px, transparent 1px);
+  background-size: $size $size;
+}
+
+// CRT 扫描线效果
+@mixin crt-scanlines {
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+      rgba(18, 16, 16, 0) 50%,
+      rgba(0, 0, 0, 0.25) 50%
+    );
+    background-size: 100% 2px;
+    z-index: 1;
+    pointer-events: none;
+  }
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(18, 16, 16, 0.1);
+    opacity: 0;
+    z-index: 2;
+    animation: flicker 0.15s infinite;
+    pointer-events: none;
+  }
+}
+
+@keyframes flicker {
+  0% { opacity: 0.1; }
+  20% { opacity: 0.6; }
+  40% { opacity: 0.3; }
+  60% { opacity: 0.8; }
+  80% { opacity: 0.2; }
+  100% { opacity: 0.4; }
+}
+
+// 机械按钮交互
+@mixin mechanical-button {
+  border: map-get($cassette-borders, 'thick-black');
+  box-shadow: map-get($cassette-shadows, 'hard-black');
+  background: map-get($cassette-colors, 'egg-white');
+  color: map-get($cassette-colors, 'deep-black');
+  font-family: map-get($cassette-fonts, 'mono');
+  font-weight: bold;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  
+  &:hover {
+    transform: translate(-1px, -1px);
+    box-shadow: 5px 5px 0 #151515;
+  }
+  
+  &:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0 #151515;
+  }
+}
+
+// 磁带风格卡片
+@mixin cassette-card {
+  background: map-get($cassette-colors, 'egg-white');
+  border: map-get($cassette-borders, 'thick-black');
+  box-shadow: map-get($cassette-shadows, 'hard-black');
+  padding: 20px;
+  position: relative;
+  
+  &::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    height: 4px;
+    background: repeating-linear-gradient(
+      90deg,
+      map-get($cassette-colors, 'deep-black') 0px,
+      map-get($cassette-colors, 'deep-black') 8px,
+      transparent 8px,
+      transparent 16px
+    );
+  }
+}
+
+// 警告条纹
+@mixin hazard-stripes {
+  background: repeating-linear-gradient(
+    45deg,
+    #F25C05,
+    #F25C05 10px,
+    #151515 10px,
+    #151515 20px
+  );
+}
+
+// 工业风格输入框
+@mixin industrial-input {
+  background: map-get($cassette-colors, 'egg-white');
+  border: map-get($cassette-borders, 'thick-black');
+  box-shadow: map-get($cassette-shadows, 'inset-hard');
+  font-family: map-get($cassette-fonts, 'mono');
+  padding: 8px 12px;
+  
+  &:focus {
+    outline: none;
+    border-color: map-get($cassette-colors, 'warning-orange');
+    box-shadow: 0 0 0 2px rgba(242, 92, 5, 0.3), map-get($cassette-shadows, 'inset-hard');
+  }
+}
+
+// 故障文字效果
+@mixin glitch-text($text-color: #EFEFE5, $glitch-color-1: #F25C05, $glitch-color-2: #00FF41) {
+  position: relative;
+  color: $text-color;
+  font-family: map-get($cassette-fonts, 'display');
+  font-size: 3rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  
+  &::before,
+  &::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+  
+  &::before {
+    animation: glitch-1 0.5s infinite;
+    color: $glitch-color-1;
+    z-index: -1;
+  }
+  
+  &::after {
+    animation: glitch-2 0.5s infinite;
+    color: $glitch-color-2;
+    z-index: -2;
+  }
+}
+
+@keyframes glitch-1 {
+  0%, 100% { clip: rect(42px, 9999px, 44px, 0); transform: skew(0.5deg); }
+  20% { clip: rect(12px, 9999px, 59px, 0); transform: skew(0.8deg); }
+  40% { clip: rect(40px, 9999px, 75px, 0); transform: skew(0.3deg); }
+  60% { clip: rect(25px, 9999px, 54px, 0); transform: skew(0.7deg); }
+  80% { clip: rect(10px, 9999px, 34px, 0); transform: skew(0.2deg); }
+}
+
+@keyframes glitch-2 {
+  0%, 100% { clip: rect(65px, 9999px, 119px, 0); transform: skew(0.1deg); }
+  20% { clip: rect(40px, 9999px, 80px, 0); transform: skew(0.4deg); }
+  40% { clip: rect(30px, 9999px, 90px, 0); transform: skew(0.6deg); }
+  60% { clip: rect(50px, 9999px, 110px, 0); transform: skew(0.2deg); }
+  80% { clip: rect(20px, 9999px, 60px, 0); transform: skew(0.8deg); }
+}
+
+// 打字机效果
+@mixin typewriter-effect {
+  overflow: hidden;
+  border-right: 2px solid map-get($cassette-colors, 'warning-orange');
+  white-space: nowrap;
+  animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes blink-caret {
+  from, to { border-color: transparent; }
+  50% { border-color: map-get($cassette-colors, 'warning-orange'); }
+}
+
+// 磁带轮旋转动画
+@mixin cassette-wheel-rotate {
+  animation: rotate 2s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+// 响应式工具
+@mixin respond-to($breakpoint) {
+  @if $breakpoint == 'mobile' {
+    @media (max-width: 768px) {
+      @content;
+    }
+  }
+  @if $breakpoint == 'tablet' {
+    @media (max-width: 1024px) {
+      @content;
+    }
+  }
+  @if $breakpoint == 'desktop' {
+    @media (min-width: 1025px) {
+      @content;
+    }
+  }
+}

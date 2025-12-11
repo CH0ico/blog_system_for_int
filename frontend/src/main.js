@@ -6,6 +6,10 @@ import * as ElementPlusIconsVue from "@element-plus/icons-vue";
 import Toast from "vue-toastification";
 import "vue-toastification/dist/index.css";
 
+// 磁带未来主义样式
+import "@/styles/cassette-futurism.scss";
+import "@/styles/global.scss";
+
 import App from "./App.vue";
 import router from "./router";
 import { useAuthStore } from "./stores/auth";

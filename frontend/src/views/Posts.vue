@@ -1,104 +1,113 @@
 <template>
-  <div class="posts-page">
-    <div class="container">
+  <div class="cassette-posts-terminal">
+    <!-- CRT 屏幕特效层 -->
+    <div class="crt-overlay">
+      <div class="scanlines"></div>
+      <div class="noise"></div>
+    </div>
+
+    <div class="posts-directory">
       <!-- 页面标题 -->
-      <div class="page-header">
-        <h1>文章列表</h1>
+      <div class="directory-header">
+        <h1>ARCHIVE DIRECTORY</h1>
         <div class="header-actions">
-          <el-button
+          <button
             v-if="
               authStore.isAuthenticated &&
               authStore.hasPermission('create_posts')
             "
-            type="primary"
+            class="cassette-btn"
             @click="$router.push('/write')"
           >
-            <el-icon><EditPen /></el-icon>
-            写文章
-          </el-button>
+            <span class="icon">✎</span>
+            NEW LOG
+          </button>
         </div>
       </div>
 
       <!-- 搜索和筛选 -->
-      <div class="filter-section">
-        <div class="search-box">
-          <el-input
+      <div class="filter-console">
+        <div class="search-console">
+          <input
             v-model="searchQuery"
-            placeholder="搜索文章..."
-            class="search-input"
+            placeholder="SEARCH ARCHIVES..."
+            class="cassette-search-input"
             @keyup.enter="handleSearch"
-          >
-            <template #prefix>
-              <el-icon><Search /></el-icon>
-            </template>
-          </el-input>
+          />
+          <button class="cassette-btn" @click="handleSearch">
+            <span class="icon">🔍</span>
+            SEARCH
+          </button>
         </div>
 
         <div class="filter-tabs">
-          <el-tabs v-model="activeTab" @tab-change="handleTabChange">
-            <el-tab-pane label="最新" name="latest" />
-            <el-tab-pane label="热门" name="popular" />
-            <el-tab-pane label="推荐" name="featured" />
-          </el-tabs>
+          <button
+            v-for="tab in tabs"
+            :key="tab.name"
+            class="echo-btn"
+            :class="{ active: activeTab === tab.name }"
+            @click="handleTabChange(tab.name)"
+          >
+            <span class="icon">{{ tab.icon }}</span>
+            {{ tab.label }}
+          </button>
         </div>
 
         <div class="filter-options">
-          <el-select
-            v-model="selectedTag"
-            placeholder="选择标签"
-            clearable
-            @change="handleTagFilter"
-          >
-            <el-option
-              v-for="tag in tags"
-              :key="tag.id"
-              :label="tag.name"
-              :value="tag.slug"
-            />
-          </el-select>
-
-          <el-select
-            v-model="selectedCategory"
-            placeholder="选择分类"
-            clearable
-            @change="handleCategoryFilter"
-          >
-            <el-option
-              v-for="category in categories"
-              :key="category.id"
-              :label="category.name"
-              :value="category.slug"
-            />
-          </el-select>
+          <!-- 简化版本，隐藏标签和分类筛选 -->
         </div>
       </div>
 
       <!-- 文章列表 -->
-      <div class="posts-container">
+      <div class="posts-archive">
         <div v-if="loading" class="loading-skeleton">
           <PostSkeleton v-for="i in 6" :key="i" />
         </div>
 
-        <div v-else-if="posts.length > 0" class="posts-list">
-          <PostItem v-for="post in posts" :key="post.id" :post="post" />
+        <div v-else-if="posts.length > 0" class="archive-files">
+          <div v-for="post in posts" :key="post.id" class="file-entry">
+            <PostItem :post="post" />
+          </div>
         </div>
 
-        <div v-else class="empty-state">
-          <el-empty description="暂无文章" />
+        <div v-else class="empty-archive">
+          <div class="empty-icon">📁</div>
+          <div class="empty-text">NO ARCHIVES FOUND</div>
+          <div class="empty-subtext">SYSTEM AWAITING INPUT</div>
         </div>
       </div>
 
       <!-- 分页 -->
-      <div v-if="totalPages > 1" class="pagination">
-        <el-pagination
-          v-model:current-page="currentPage"
-          v-model:page-size="pageSize"
-          :total="totalPosts"
-          :page-sizes="[10, 20, 50]"
-          layout="total, sizes, prev, pager, next, jumper"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
+      <div v-if="totalPages > 1" class="pagination-console">
+        <div class="pagination-info">
+          <span
+            >ARCHIVES {{ (currentPage - 1) * pageSize + 1 }}-{{
+              Math.min(currentPage * pageSize, totalPosts)
+            }}
+            OF {{ totalPosts }}</span
+          >
+        </div>
+        <div class="pagination-controls">
+          <button
+            class="cassette-btn"
+            :disabled="currentPage <= 1"
+            @click="handleCurrentChange(currentPage - 1)"
+          >
+            <span class="icon">◀</span>
+            PREV
+          </button>
+          <span class="page-indicator"
+            >PAGE {{ currentPage }} / {{ totalPages }}</span
+          >
+          <button
+            class="cassette-btn"
+            :disabled="currentPage >= totalPages"
+            @click="handleCurrentChange(currentPage + 1)"
+          >
+            NEXT
+            <span class="icon">▶</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -107,16 +116,23 @@
 <script setup>
 import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
-import { EditPen, Search } from "@element-plus/icons-vue";
 import { useAuthStore } from "@/stores/auth";
 import { usePostsStore } from "@/stores/posts";
-import PostItem from "@/components/posts/PostItem.vue";
-import PostSkeleton from "@/components/posts/PostSkeleton.vue";
+import PostItem from "@/components/PostItem.vue";
+import PostSkeleton from "@/components/PostSkeleton.vue";
+import { ElMessage } from "element-plus";
 
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
-const postsStore = usePostsStore();
+const postStore = usePostsStore();
+
+// 标签配置
+const tabs = [
+  { name: "latest", label: "LATEST", icon: "📅" },
+  { name: "popular", label: "POPULAR", icon: "🔥" },
+  { name: "featured", label: "FEATURED", icon: "⭐" },
+];
 
 // 状态
 const loading = ref(false);
@@ -128,29 +144,29 @@ const tags = ref([]);
 const categories = ref([]);
 
 // 计算属性
-const posts = computed(() => postsStore.posts);
+const posts = computed(() => postStore.posts);
 const currentPage = computed({
-  get: () => postsStore.pagination.page,
+  get: () => postStore.pagination.page,
   set: (val) => {
     handleCurrentChange(val);
   },
 });
 const pageSize = computed({
-  get: () => postsStore.pagination.per_page,
+  get: () => postStore.pagination.per_page,
   set: (val) => {
     handleSizeChange(val);
   },
 });
-const totalPosts = computed(() => postsStore.pagination.total);
-const totalPages = computed(() => postsStore.pagination.pages);
+const totalPosts = computed(() => postStore.pagination.total);
+const totalPages = computed(() => postStore.pagination.pages);
 
 // 获取文章列表
 const fetchPosts = async (params = {}) => {
   loading.value = true;
   try {
-    await postsStore.fetchPosts(params);
+    await postStore.fetchPosts(params);
   } catch (error) {
-    console.error("Failed to fetch posts:", error);
+    ElMessage.error("ARCHIVE RETRIEVAL FAILED");
   } finally {
     loading.value = false;
   }
@@ -159,15 +175,11 @@ const fetchPosts = async (params = {}) => {
 // 获取标签和分类
 const fetchTagsAndCategories = async () => {
   try {
-    const [tagsResponse, categoriesResponse] = await Promise.all([
-      fetch("/api/posts/tags"),
-      fetch("/api/posts/categories"),
-    ]);
-
-    tags.value = (await tagsResponse.json()).tags || [];
-    categories.value = (await categoriesResponse.json()).categories || [];
+    // 简化处理，直接设置空数组
+    tags.value = [];
+    categories.value = [];
   } catch (error) {
-    console.error("Failed to fetch tags and categories:", error);
+    console.error("FILTER DATA RETRIEVAL FAILED:", error);
   }
 };
 
@@ -221,6 +233,7 @@ const handleCategoryFilter = () => {
 
 // 处理标签页切换
 const handleTabChange = (tab) => {
+  activeTab.value = tab;
   const query = { ...route.query };
 
   switch (tab) {
@@ -264,17 +277,20 @@ const handleCurrentChange = (page) => {
 const fetchFeaturedPosts = async () => {
   loading.value = true;
   try {
-    await postsStore.clearPosts();
-    const posts = await postsStore.fetchFeaturedPosts({ limit: 20 });
-    postsStore.posts = posts;
-    postsStore.pagination = {
-      page: 1,
-      per_page: 20,
-      total: posts.length,
-      pages: 1,
-    };
+    await postStore.clearPosts();
+    const featuredPosts = await postStore.fetchFeaturedPosts({ limit: 20 });
+    // 简化处理，直接使用返回的数据
+    if (featuredPosts && featuredPosts.length > 0) {
+      postStore.posts = featuredPosts;
+      postStore.pagination = {
+        page: 1,
+        per_page: 20,
+        total: featuredPosts.length,
+        pages: 1,
+      };
+    }
   } catch (error) {
-    console.error("Failed to fetch featured posts:", error);
+    console.error("FEATURED ARCHIVE RETRIEVAL FAILED:", error);
   } finally {
     loading.value = false;
   }
@@ -320,114 +336,354 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.posts-page {
+.cassette-posts-terminal {
+  position: relative;
   min-height: 100vh;
-  padding: 40px 0;
+  background-color: var(--color-eggshell);
+  color: var(--color-dark-black);
+  font-family: "Courier New", monospace;
+  overflow: hidden;
 }
 
-.container {
+/* CRT 屏幕特效 */
+.crt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.scanlines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(21, 21, 21, 0.1) 0px,
+    rgba(21, 21, 21, 0.1) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  animation: scanlines 8s linear infinite;
+}
+
+.noise {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  animation: noise 0.5s steps(10) infinite;
+}
+
+@keyframes scanlines {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(10px);
+  }
+}
+
+@keyframes noise {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  10% {
+    transform: translate(-5%, -5%);
+  }
+  20% {
+    transform: translate(-10%, 5%);
+  }
+  30% {
+    transform: translate(5%, -10%);
+  }
+  40% {
+    transform: translate(-5%, 15%);
+  }
+  50% {
+    transform: translate(-10%, 5%);
+  }
+  60% {
+    transform: translate(15%, 0);
+  }
+  70% {
+    transform: translate(0, 10%);
+  }
+  80% {
+    transform: translate(-15%, 0);
+  }
+  90% {
+    transform: translate(10%, 5%);
+  }
+}
+
+.posts-directory {
+  position: relative;
+  z-index: 2;
+  padding: 40px 20px;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
 }
 
-.page-header {
+.directory-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 32px;
-}
-
-.page-header h1 {
-  margin: 0;
-  font-size: 2rem;
-  font-weight: 600;
-  color: var(--el-text-color-primary);
-}
-
-.filter-section {
-  background: var(--el-bg-color);
-  border: 1px solid var(--el-border-color-lighter);
-  border-radius: 8px;
+  margin-bottom: 40px;
   padding: 20px;
-  margin-bottom: 24px;
+  background: var(--color-eggshell);
+  border: 3px solid var(--color-dark-black);
+  box-shadow: 4px 4px 0 var(--color-dark-black);
 }
 
-.search-box {
-  margin-bottom: 20px;
+.directory-header h1 {
+  font-size: 32px;
+  font-weight: 900;
+  color: var(--color-dark-black);
+  text-shadow: 3px 3px 0 var(--color-warning-orange);
+  margin: 0;
+  letter-spacing: 2px;
 }
 
-.search-input {
-  width: 100%;
-  max-width: 400px;
+.filter-console {
+  background: var(--color-eggshell);
+  border: 3px solid var(--color-dark-black);
+  box-shadow: 4px 4px 0 var(--color-dark-black);
+  padding: 30px;
+  margin-bottom: 30px;
+}
+
+.search-console {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+  align-items: center;
+}
+
+.cassette-search-input {
+  flex: 1;
+  padding: 15px 20px;
+  border: 3px solid var(--color-dark-black);
+  background: var(--color-eggshell);
+  color: var(--color-dark-black);
+  font-family: "Courier New", monospace;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 2px 2px 0 var(--color-dark-black);
+  outline: none;
+  transition: all 0.1s ease;
+}
+
+.cassette-search-input:focus {
+  box-shadow: 4px 4px 0 var(--color-warning-orange);
+  transform: translate(-2px, -2px);
+}
+
+.cassette-search-input::placeholder {
+  color: var(--color-dark-black);
+  opacity: 0.6;
 }
 
 .filter-tabs {
-  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
 }
 
 .filter-options {
   display: flex;
-  gap: 16px;
+  gap: 20px;
   flex-wrap: wrap;
 }
 
-.posts-container {
-  min-height: 400px;
+.cassette-select {
+  padding: 12px 20px;
+  border: 3px solid var(--color-dark-black);
+  background: var(--color-eggshell);
+  color: var(--color-dark-black);
+  font-family: "Courier New", monospace;
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 2px 2px 0 var(--color-dark-black);
+  outline: none;
+  cursor: pointer;
+  transition: all 0.1s ease;
 }
 
-.posts-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.cassette-select:focus {
+  box-shadow: 4px 4px 0 var(--color-warning-orange);
+  transform: translate(-2px, -2px);
+}
+
+.posts-archive {
+  background: var(--color-eggshell);
+  border: 3px solid var(--color-dark-black);
+  box-shadow: 4px 4px 0 var(--color-dark-black);
+  padding: 30px;
+  margin-bottom: 30px;
+}
+
+.archive-files {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
+}
+
+.file-entry {
+  border: 2px solid var(--color-dark-black);
+  background: var(--color-eggshell);
+  box-shadow: 2px 2px 0 var(--color-dark-black);
+  transition: all 0.1s ease;
+}
+
+.file-entry:hover {
+  box-shadow: 4px 4px 0 var(--color-warning-orange);
+  transform: translate(-2px, -2px);
 }
 
 .loading-skeleton {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 20px;
 }
 
-.empty-state {
+.empty-archive {
+  text-align: center;
+  padding: 80px 20px;
+  border: 3px dashed var(--color-dark-black);
+  background: rgba(21, 21, 21, 0.05);
+}
+
+.empty-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  opacity: 0.3;
+}
+
+.empty-text {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--color-dark-black);
+  margin-bottom: 10px;
+  letter-spacing: 2px;
+}
+
+.empty-subtext {
+  font-size: 16px;
+  color: var(--color-dark-black);
+  opacity: 0.6;
+  font-family: "Courier New", monospace;
+}
+
+.pagination-console {
+  background: var(--color-eggshell);
+  border: 3px solid var(--color-dark-black);
+  box-shadow: 4px 4px 0 var(--color-dark-black);
+  padding: 20px;
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  min-height: 400px;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
-.pagination {
+.pagination-info {
+  font-family: "Courier New", monospace;
+  font-weight: 600;
+  color: var(--color-dark-black);
+  font-size: 14px;
+}
+
+.pagination-controls {
   display: flex;
-  justify-content: center;
-  margin-top: 40px;
+  align-items: center;
+  gap: 15px;
 }
 
+.page-indicator {
+  font-family: "Courier New", monospace;
+  font-weight: 900;
+  color: var(--color-dark-black);
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+/* 响应式设计 */
 @media (max-width: 768px) {
-  .page-header {
+  .directory-header {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 16px;
+    gap: 20px;
+    text-align: center;
   }
 
-  .page-header h1 {
-    font-size: 1.5rem;
+  .directory-header h1 {
+    font-size: 24px;
+  }
+
+  .search-console {
+    flex-direction: column;
+  }
+
+  .cassette-search-input {
+    width: 100%;
+  }
+
+  .filter-tabs {
+    justify-content: center;
   }
 
   .filter-options {
     flex-direction: column;
   }
 
-  .filter-options .el-select {
+  .cassette-select {
     width: 100%;
+  }
+
+  .archive-files,
+  .loading-skeleton {
+    grid-template-columns: 1fr;
+  }
+
+  .pagination-console {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .pagination-controls {
+    justify-content: center;
   }
 }
 
 @media (max-width: 480px) {
-  .container {
-    padding: 0 16px;
+  .posts-directory {
+    padding: 20px 15px;
   }
 
-  .filter-section {
-    padding: 16px;
+  .filter-console,
+  .posts-archive {
+    padding: 20px;
+  }
+
+  .directory-header h1 {
+    font-size: 20px;
+  }
+
+  .empty-text {
+    font-size: 18px;
+  }
+
+  .page-indicator {
+    font-size: 14px;
   }
 }
 </style>

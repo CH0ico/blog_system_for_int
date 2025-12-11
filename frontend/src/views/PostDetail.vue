@@ -1,22 +1,38 @@
 <!-- PostDetail.vue -->
 <template>
-  <div v-loading="loading" class="post-detail">
-    <!-- 文章头部 -->
-    <header v-if="post" class="post-header">
-      <div class="container">
-        <el-breadcrumb separator="/">
-          <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-          <el-breadcrumb-item :to="{ path: '/posts' }">文章</el-breadcrumb-item>
-          <el-breadcrumb-item>{{ post.title }}</el-breadcrumb-item>
-        </el-breadcrumb>
+  <div class="cassette-post-terminal">
+    <!-- CRT 屏幕特效层 -->
+    <div class="crt-overlay">
+      <div class="scanlines"></div>
+      <div class="noise"></div>
+    </div>
 
-        <h1 class="post-title">{{ post.title }}</h1>
+    <div v-if="post" class="post-file">
+      <!-- 文章头部 -->
+      <header class="file-header">
+        <div class="breadcrumb-trail">
+          <button class="echo-btn" @click="$router.push('/')">
+            <span class="icon">🏠</span>
+            HOME
+          </button>
+          <span class="separator">→</span>
+          <button class="echo-btn" @click="$router.push('/posts')">
+            <span class="icon">📁</span>
+            ARCHIVES
+          </button>
+          <span class="separator">→</span>
+          <span class="current-file">{{ post.title }}</span>
+        </div>
 
-        <div class="post-meta">
+        <h1 class="file-title">{{ post.title }}</h1>
+
+        <div class="file-meta">
           <div class="meta-left">
-            <el-avatar :src="post.author.avatar" :size="40">
-              {{ post.author.nickname?.[0] || post.author.username[0] }}
-            </el-avatar>
+            <div class="author-badge">
+              <div class="avatar-placeholder">
+                {{ post.author.nickname?.[0] || post.author.username[0] }}
+              </div>
+            </div>
             <div class="author-info">
               <router-link
                 :to="`/users/${post.author.username}`"
@@ -24,154 +40,160 @@
               >
                 {{ post.author.nickname || post.author.username }}
               </router-link>
-              <div class="post-time">
-                <el-icon><Clock /></el-icon>
+              <div class="file-timestamp">
+                <span class="icon">📅</span>
                 <span>{{
                   formatDate(post.published_at || post.created_at)
                 }}</span>
-                ·
-                <span>{{ post.view_count }} 次阅读</span>
+                <span class="separator">|</span>
+                <span class="icon">👁</span>
+                <span>{{ post.view_count }} VIEWS</span>
               </div>
             </div>
           </div>
 
           <div class="meta-right">
-            <el-tag
+            <button
               v-for="tag in post.tags"
               :key="tag.id"
-              type="info"
-              size="small"
+              class="tag-badge"
               @click="$router.push(`/tags/${tag.slug}`)"
             >
-              {{ tag.name }}
-            </el-tag>
+              #{{ tag.name }}
+            </button>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
 
-    <!-- 文章内容 -->
-    <main v-if="post" class="post-body">
-      <div class="container">
-        <div class="post-content-wrapper">
+      <!-- 文章内容 -->
+      <main class="file-content">
+        <div class="content-wrapper">
           <!-- 文章摘要 -->
-          <div v-if="post.summary" class="post-summary">
-            <el-alert :title="post.summary" type="info" :closable="false" />
+          <div v-if="post.summary" class="file-summary">
+            <div class="summary-header">ABSTRACT</div>
+            <div class="summary-content">{{ post.summary }}</div>
           </div>
 
           <!-- 正文 -->
           <article
-            class="post-content article-content"
+            class="file-text article-content"
             v-html="postContentHtml"
           ></article>
 
           <!-- 分类 -->
-          <div v-if="post.categories.length" class="post-categories">
-            <el-icon><Folder /></el-icon>
-            <span
+          <div v-if="post.categories.length" class="file-categories">
+            <span class="icon">📂</span>
+            <button
               v-for="cat in post.categories"
               :key="cat.id"
+              class="category-link"
               @click="$router.push(`/categories/${cat.slug}`)"
             >
               {{ cat.name }}
-            </span>
+            </button>
           </div>
 
           <!-- 版权声明 -->
-          <div class="post-license">
-            <el-alert title="版权声明" type="warning" :closable="false">
-              <template #default>
-                本文采用
-                <el-link
-                  href="https://creativecommons.org/licenses/by-nc-sa/4.0/"
-                  target="_blank"
-                  type="primary"
-                >
-                  CC BY-NC-SA 4.0
-                </el-link>
-                协议，转载请注明出处。
-              </template>
-            </el-alert>
+          <div class="file-license">
+            <div class="license-header">LICENSE</div>
+            <div class="license-content">
+              CONTENT PROTECTED UNDER
+              <a
+                href="https://creativecommons.org/licenses/by-nc-sa/4.0/"
+                target="_blank"
+                class="license-link"
+              >
+                CC BY-NC-SA 4.0
+              </a>
+              PROTOCOL
+            </div>
           </div>
         </div>
-      </div>
-    </main>
+      </main>
 
-    <!-- 互动栏 -->
-    <section v-if="post" class="post-actions">
-      <div class="container">
-        <div class="action-buttons">
-          <el-button
-            :type="post.liked ? 'primary' : 'default'"
-            circle
+      <!-- 互动栏 -->
+      <section class="file-actions">
+        <div class="action-console">
+          <button
+            class="action-btn"
+            :class="{ active: post.liked }"
             @click="toggleLike"
           >
-            <el-icon><Pointer /></el-icon>
-          </el-button>
-          <span class="action-count">{{ post.like_count }}</span>
+            <span class="icon">👍</span>
+            <span class="action-label">LIKE</span>
+            <span class="action-count">{{ post.like_count }}</span>
+          </button>
 
-          <el-button
-            :type="post.favorited ? 'warning' : 'default'"
-            circle
+          <button
+            class="action-btn"
+            :class="{ active: post.favorited }"
             @click="toggleFavorite"
           >
-            <el-icon><Star /></el-icon>
-          </el-button>
-          <span class="action-count">{{ post.favorite_count }}</span>
+            <span class="icon">⭐</span>
+            <span class="action-label">FAVORITE</span>
+            <span class="action-count">{{ post.favorite_count }}</span>
+          </button>
 
-          <el-button circle @click="copyLink">
-            <el-icon><Link /></el-icon>
-          </el-button>
+          <button class="action-btn" @click="copyLink">
+            <span class="icon">🔗</span>
+            <span class="action-label">SHARE</span>
+          </button>
 
-          <el-dropdown trigger="click" @command="handleMoreAction">
-            <el-button circle>
-              <el-icon><MoreFilled /></el-icon>
-            </el-button>
-            <template #dropdown>
-              <el-dropdown-menu>
-                <el-dropdown-item command="report">举报</el-dropdown-item>
-                <el-dropdown-item v-if="canEdit" command="edit" divided>
-                  编辑
-                </el-dropdown-item>
-                <el-dropdown-item
-                  v-if="canEdit"
-                  command="delete"
-                  style="color: var(--el-color-danger)"
-                >
-                  删除
-                </el-dropdown-item>
-              </el-dropdown-menu>
-            </template>
-          </el-dropdown>
+          <div class="more-actions">
+            <button class="action-btn" @click="showMoreMenu = !showMoreMenu">
+              <span class="icon">⚙</span>
+              <span class="action-label">MORE</span>
+            </button>
+            <div v-if="showMoreMenu" class="action-menu">
+              <button class="menu-item" @click="handleMoreAction('report')">
+                <span class="icon">🚨</span>
+                REPORT
+              </button>
+              <button
+                v-if="canEdit"
+                class="menu-item"
+                @click="handleMoreAction('edit')"
+              >
+                <span class="icon">✎</span>
+                EDIT
+              </button>
+              <button
+                v-if="canEdit"
+                class="menu-item danger"
+                @click="handleMoreAction('delete')"
+              >
+                <span class="icon">🗑</span>
+                DELETE
+              </button>
+            </div>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- 评论区 -->
-    <section v-if="post && post.allow_comments" class="post-comments">
-      <div class="container">
-        <h3>评论</h3>
-        <CommentList
-          v-model:comment-count="post.comment_count"
-          :post-id="post.id"
-          @posted="post.comment_count += 1"
-        />
-      </div>
-    </section>
+      <!-- 评论区 -->
+      <section v-if="post && post.allow_comments" class="file-comments">
+        <div class="comments-console">
+          <h3 class="comments-header">TERMINAL LOGS</h3>
+          <CommentList
+            v-model:comment-count="post.comment_count"
+            :post-id="post.id"
+            @posted="post.comment_count += 1"
+          />
+        </div>
+      </section>
+    </div>
 
     <!-- 404 / 无权限 -->
-    <div v-else-if="!loading" class="error-state">
-      <el-result
-        icon="warning"
-        title="文章不存在或无权限查看"
-        sub-title="请检查链接是否正确，或登录后重试"
-      >
-        <template #extra>
-          <el-button type="primary" @click="$router.push('/posts')">
-            返回文章列表
-          </el-button>
-        </template>
-      </el-result>
+    <div v-else-if="!loading" class="error-terminal">
+      <div class="error-console">
+        <div class="error-icon">⚠</div>
+        <div class="error-title">FILE NOT FOUND OR ACCESS DENIED</div>
+        <div class="error-message">CHECK LINK VALIDITY OR LOGIN STATUS</div>
+        <button class="cassette-btn" @click="$router.push('/posts')">
+          <span class="icon">📁</span>
+          RETURN TO ARCHIVES
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -180,14 +202,6 @@
 import { ref, computed, onMounted } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ElMessage, ElMessageBox } from "element-plus";
-import {
-  Clock,
-  Pointer,
-  Star,
-  Link,
-  MoreFilled,
-  Folder,
-} from "@element-plus/icons-vue";
 import { useAuthStore } from "@/stores/auth";
 import { usePostsStore } from "@/stores/posts";
 import { marked } from "marked";
@@ -197,10 +211,11 @@ import CommentList from "@/components/posts/CommentList.vue";
 const route = useRoute();
 const router = useRouter();
 const authStore = useAuthStore();
-const postsStore = usePostsStore();
+const postStore = usePostsStore();
 
 const loading = ref(true);
 const post = ref(null);
+const showMoreMenu = ref(false);
 
 const canEdit = computed(
   () =>
@@ -248,45 +263,48 @@ const fetchPost = async () => {
 
 const toggleLike = async () => {
   if (!authStore.isAuthenticated) {
-    ElMessage.warning("请先登录");
+    ElMessage.warning("LOGIN REQUIRED");
     return;
   }
-  await postsStore.toggleLike(post.value.id);
+  await postStore.toggleLike(post.value.id);
   post.value.liked = !post.value.liked;
   post.value.like_count += post.value.liked ? 1 : -1;
 };
 
 const toggleFavorite = async () => {
   if (!authStore.isAuthenticated) {
-    ElMessage.warning("请先登录");
+    ElMessage.warning("LOGIN REQUIRED");
     return;
   }
-  await postsStore.toggleFavorite(post.value.id);
+  await postStore.toggleFavorite(post.value.id);
   post.value.favorited = !post.value.favorited;
   post.value.favorite_count += post.value.favorited ? 1 : -1;
 };
 
 const copyLink = () => {
   navigator.clipboard.writeText(location.href);
-  ElMessage.success("链接已复制");
+  ElMessage.success("LINK COPIED TO CLIPBOARD");
 };
 
 const handleMoreAction = (cmd) => {
+  showMoreMenu.value = false;
   switch (cmd) {
     case "edit":
       router.push(`/write?id=${post.value.id}`);
       break;
     case "delete":
-      ElMessageBox.confirm("确定删除该文章吗？", "提示", { type: "warning" })
+      ElMessageBox.confirm("CONFIRM FILE DELETION?", "SYSTEM WARNING", {
+        type: "warning",
+      })
         .then(async () => {
-          await postsStore.deletePost(post.value.id);
-          ElMessage.success("删除成功");
+          await postStore.deletePost(post.value.id);
+          ElMessage.success("FILE DELETED");
           router.replace("/posts");
         })
         .catch(() => {});
       break;
     case "report":
-      ElMessage.info("举报功能开发中");
+      ElMessage.info("REPORT FUNCTION UNDER DEVELOPMENT");
       break;
   }
 };
@@ -297,121 +315,533 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.post-detail {
-  background: var(--el-bg-color-page);
+.cassette-post-terminal {
+  position: relative;
   min-height: 100vh;
+  background-color: var(--color-eggshell);
+  color: var(--color-dark-black);
+  font-family: "Courier New", monospace;
+  overflow: hidden;
 }
-.container {
+
+/* CRT 屏幕特效 */
+.crt-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.scanlines {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    0deg,
+    rgba(21, 21, 21, 0.1) 0px,
+    rgba(21, 21, 21, 0.1) 1px,
+    transparent 1px,
+    transparent 2px
+  );
+  animation: scanlines 8s linear infinite;
+}
+
+.noise {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  animation: noise 0.5s steps(10) infinite;
+}
+
+@keyframes scanlines {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(10px);
+  }
+}
+
+@keyframes noise {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  10% {
+    transform: translate(-5%, -5%);
+  }
+  20% {
+    transform: translate(-10%, 5%);
+  }
+  30% {
+    transform: translate(5%, -10%);
+  }
+  40% {
+    transform: translate(-5%, 15%);
+  }
+  50% {
+    transform: translate(-10%, 5%);
+  }
+  60% {
+    transform: translate(15%, 0);
+  }
+  70% {
+    transform: translate(0, 10%);
+  }
+  80% {
+    transform: translate(-15%, 0);
+  }
+  90% {
+    transform: translate(10%, 5%);
+  }
+}
+
+.post-file {
+  position: relative;
+  z-index: 2;
   max-width: 860px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 40px 20px;
 }
-.post-header {
-  background: #fff;
-  padding: 24px 0;
-  border-bottom: 1px solid var(--el-border-color-lighter);
+
+.file-header {
+  background: var(--color-eggshell);
+  border: 3px solid var(--color-dark-black);
+  box-shadow: 4px 4px 0 var(--color-dark-black);
+  padding: 30px;
+  margin-bottom: 30px;
 }
-.post-title {
-  font-size: 2rem;
-  margin: 16px 0;
-  line-height: 1.4;
+
+.breadcrumb-trail {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
 }
-.post-meta {
+
+.separator {
+  color: var(--color-dark-black);
+  font-weight: 900;
+  font-size: 18px;
+}
+
+.current-file {
+  font-weight: 600;
+  color: var(--color-dark-black);
+  opacity: 0.8;
+}
+
+.file-title {
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--color-dark-black);
+  text-shadow: 4px 4px 0 var(--color-warning-orange);
+  margin: 0 0 20px 0;
+  line-height: 1.2;
+  letter-spacing: 1px;
+}
+
+.file-meta {
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 20px;
 }
+
 .meta-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 15px;
 }
+
+.author-badge {
+  width: 50px;
+  height: 50px;
+  border: 3px solid var(--color-dark-black);
+  background: var(--color-eggshell);
+  box-shadow: 2px 2px 0 var(--color-dark-black);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.avatar-placeholder {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--color-dark-black);
+}
+
 .author-info {
   display: flex;
   flex-direction: column;
+  gap: 5px;
 }
+
 .author-name {
-  font-weight: 600;
-  color: var(--el-text-color-primary);
+  font-weight: 900;
+  color: var(--color-dark-black);
   text-decoration: none;
+  font-size: 16px;
+  letter-spacing: 0.5px;
 }
-.post-time {
-  font-size: 13px;
-  color: var(--el-text-color-secondary);
+
+.author-name:hover {
+  color: var(--color-warning-orange);
+}
+
+.file-timestamp {
+  font-size: 14px;
+  color: var(--color-dark-black);
+  opacity: 0.7;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+  font-family: "Courier New", monospace;
 }
+
 .meta-right {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
-.post-body {
-  padding: 32px 0;
+
+.tag-badge {
+  padding: 6px 12px;
+  border: 2px solid var(--color-dark-black);
+  background: var(--color-eggshell);
+  color: var(--color-dark-black);
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.1s ease;
 }
-.post-summary {
-  margin-bottom: 24px;
+
+.tag-badge:hover {
+  background: var(--color-warning-orange);
+  transform: translate(-1px, -1px);
+  box-shadow: 2px 2px 0 var(--color-dark-black);
 }
-.post-content {
+
+.file-content {
+  background: var(--color-eggshell);
+  border: 3px solid var(--color-dark-black);
+  box-shadow: 4px 4px 0 var(--color-dark-black);
+  padding: 30px;
+  margin-bottom: 30px;
+}
+
+.content-wrapper {
+  max-width: 100%;
+}
+
+.file-summary {
+  margin-bottom: 30px;
+  padding: 20px;
+  border: 2px dashed var(--color-dark-black);
+  background: rgba(21, 21, 21, 0.05);
+}
+
+.summary-header {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--color-dark-black);
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+}
+
+.summary-content {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-dark-black);
+  opacity: 0.9;
+}
+
+.file-text {
   font-size: 16px;
   line-height: 1.8;
-  color: var(--el-text-color-primary);
+  color: var(--color-dark-black);
 }
-.post-categories {
-  margin-top: 32px;
+
+.file-categories {
+  margin-top: 30px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--color-dark-black);
+  opacity: 0.8;
+}
+
+.category-link {
+  padding: 6px 12px;
+  border: 2px solid var(--color-dark-black);
+  background: var(--color-eggshell);
+  color: var(--color-dark-black);
+  font-family: "Courier New", monospace;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.category-link:hover {
+  background: var(--color-warning-orange);
+  transform: translate(-1px, -1px);
+  box-shadow: 2px 2px 0 var(--color-dark-black);
+}
+
+.file-license {
+  margin-top: 30px;
+  padding: 20px;
+  border: 2px solid var(--color-dark-black);
+  background: rgba(255, 107, 0, 0.1);
+}
+
+.license-header {
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--color-dark-black);
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+}
+
+.license-content {
+  font-size: 14px;
+  color: var(--color-dark-black);
+  opacity: 0.9;
+  font-family: "Courier New", monospace;
+}
+
+.license-link {
+  color: var(--color-warning-orange);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.license-link:hover {
+  text-decoration: underline;
+}
+
+.file-actions {
+  background: var(--color-eggshell);
+  border: 3px solid var(--color-dark-black);
+  box-shadow: 4px 4px 0 var(--color-dark-black);
+  padding: 20px;
+  margin-bottom: 30px;
+  position: sticky;
+  bottom: 20px;
+  z-index: 10;
+}
+
+.action-console {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 12px 20px;
+  border: 3px solid var(--color-dark-black);
+  background: var(--color-eggshell);
+  color: var(--color-dark-black);
+  font-family: "Courier New", monospace;
   font-size: 14px;
-  color: var(--el-text-color-secondary);
-}
-.post-categories span {
+  font-weight: 600;
   cursor: pointer;
-  color: var(--el-color-primary);
+  transition: all 0.1s ease;
+  box-shadow: 2px 2px 0 var(--color-dark-black);
 }
-.post-license {
-  margin-top: 32px;
+
+.action-btn:hover {
+  box-shadow: 4px 4px 0 var(--color-dark-black);
+  transform: translate(-2px, -2px);
 }
-.post-actions {
-  background: #fff;
-  padding: 16px 0;
-  border-top: 1px solid var(--el-border-color-lighter);
-  position: sticky;
-  bottom: 0;
+
+.action-btn.active {
+  background: var(--color-warning-orange);
+  box-shadow: 2px 2px 0 var(--color-dark-black);
 }
-.action-buttons {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+
+.action-btn.active:hover {
+  box-shadow: 4px 4px 0 var(--color-dark-black);
 }
+
+.action-label {
+  font-weight: 900;
+  letter-spacing: 0.5px;
+}
+
 .action-count {
   font-size: 14px;
-  color: var(--el-text-color-secondary);
-  margin-right: 16px;
+  font-weight: 900;
+  color: var(--color-dark-black);
+  margin-left: 5px;
 }
-.post-comments {
-  background: #fff;
-  margin-top: 24px;
-  padding: 32px 0;
+
+.more-actions {
+  position: relative;
 }
-.placeholder {
-  text-align: center;
-  color: var(--el-text-color-secondary);
+
+.action-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 10px;
+  background: var(--color-eggshell);
+  border: 3px solid var(--color-dark-black);
+  box-shadow: 4px 4px 0 var(--color-dark-black);
+  z-index: 100;
+  min-width: 200px;
 }
-.error-state {
-  padding: 80px 20px;
+
+.menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  border: none;
+  background: var(--color-eggshell);
+  color: var(--color-dark-black);
+  font-family: "Courier New", monospace;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.menu-item:hover {
+  background: var(--color-warning-orange);
+}
+
+.menu-item.danger {
+  color: #dc3545;
+}
+
+.menu-item.danger:hover {
+  background: #dc3545;
+  color: white;
+}
+
+.file-comments {
+  background: var(--color-eggshell);
+  border: 3px solid var(--color-dark-black);
+  box-shadow: 4px 4px 0 var(--color-dark-black);
+  padding: 30px;
+}
+
+.comments-header {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--color-dark-black);
+  margin: 0 0 20px 0;
+  text-shadow: 3px 3px 0 var(--color-warning-orange);
+  letter-spacing: 1px;
+}
+
+.error-terminal {
   display: flex;
   justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 40px 20px;
 }
+
+.error-console {
+  background: var(--color-eggshell);
+  border: 3px solid var(--color-dark-black);
+  box-shadow: 4px 4px 0 var(--color-dark-black);
+  padding: 40px;
+  text-align: center;
+  max-width: 500px;
+}
+
+.error-icon {
+  font-size: 64px;
+  margin-bottom: 20px;
+  color: var(--color-dark-black);
+}
+
+.error-title {
+  font-size: 24px;
+  font-weight: 900;
+  color: var(--color-dark-black);
+  margin-bottom: 10px;
+  letter-spacing: 1px;
+}
+
+.error-message {
+  font-size: 16px;
+  color: var(--color-dark-black);
+  opacity: 0.7;
+  margin-bottom: 30px;
+  font-family: "Courier New", monospace;
+}
+
+/* 响应式设计 */
 @media (max-width: 768px) {
-  .post-title {
-    font-size: 1.5rem;
+  .post-file {
+    padding: 20px 15px;
   }
-  .post-meta {
+
+  .file-header,
+  .file-content,
+  .file-actions,
+  .file-comments {
+    padding: 20px;
+  }
+
+  .file-title {
+    font-size: 2rem;
+  }
+
+  .file-meta {
     flex-direction: column;
     align-items: flex-start;
+    gap: 15px;
+  }
+
+  .action-console {
+    justify-content: center;
+  }
+
+  .breadcrumb-trail {
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .file-title {
+    font-size: 1.5rem;
+  }
+
+  .action-console {
+    flex-direction: column;
+  }
+
+  .action-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pagination-console {
+    flex-direction: column;
+    text-align: center;
   }
 }
 </style>

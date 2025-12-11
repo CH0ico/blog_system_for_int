@@ -118,66 +118,111 @@ onUnmounted(() => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  background: #efefe5;
+  color: #151515;
+  font-family: "Consolas", "Monaco", monospace;
+  background-image:
+    linear-gradient(rgba(21, 21, 21, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(21, 21, 21, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
 }
 
 .main-content {
   flex: 1;
-  padding: 20px 0;
+  padding: 0;
 }
 
+/* 磁带未来主义风格的在线用户计数器 */
 .online-count {
   position: fixed;
   right: 30px;
   bottom: 150px;
   z-index: 1000;
-  background: var(--el-bg-color);
-  border-radius: 50%;
-  width: 50px;
-  height: 50px;
+  background: #efefe5;
+  border: 3px solid #151515;
+  box-shadow: 4px 4px 0 #151515;
+  width: 60px;
+  height: 60px;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--el-box-shadow-lighter);
   cursor: pointer;
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+  transition: all 0.1s ease;
+}
+
+.online-count:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 #151515;
+}
+
+.online-count:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 #151515;
+}
+
+.online-popover {
+  background: #efefe5;
+  border: 3px solid #151515;
+  box-shadow: 4px 4px 0 #151515;
+  padding: 15px;
+  font-family: "Courier New", monospace;
 }
 
 .online-popover .title {
-  font-weight: 600;
-  margin-bottom: 8px;
+  font-weight: bold;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  border-bottom: 2px solid #151515;
+  padding-bottom: 5px;
 }
 
 .online-popover .count {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   font-size: 14px;
-  margin-bottom: 8px;
+  margin-bottom: 12px;
+  font-weight: bold;
 }
 
 .online-popover .actions {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
+/* 磁带未来主义风格的新通知提示 */
 .new-notification {
   position: fixed;
   top: 100px;
   right: 30px;
-  background: var(--el-color-primary);
-  color: white;
-  padding: 10px 20px;
-  border-radius: 20px;
+  background: #f25c05;
+  color: #efefe5;
+  padding: 12px 24px;
+  border: 3px solid #151515;
+  box-shadow: 4px 4px 0 #151515;
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 8px;
-  box-shadow: var(--el-box-shadow);
+  gap: 10px;
+  font-family: "Courier New", monospace;
+  font-weight: bold;
+  text-transform: uppercase;
   animation: slideInRight 0.3s ease;
   z-index: 1000;
+  transition: all 0.1s ease;
 }
 
 .new-notification:hover {
-  background: var(--el-color-primary-dark-2);
+  transform: translate(-1px, -1px);
+  box-shadow: 5px 5px 0 #151515;
+  background: #d94c04;
+}
+
+.new-notification:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 #151515;
 }
 
 @keyframes slideInRight {
