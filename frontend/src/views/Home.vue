@@ -36,10 +36,33 @@
           </div>
         </div>
 
-        <div v-if="authStore.isAuthenticated" class="nav-item-wrapper">
-          <div class="echo-btn active">
-            <span class="icon">⦿</span>
-            LOGGED IN: USER
+        <!-- 用户操作菜单 -->
+        <div v-if="authStore.isAuthenticated" class="user-actions-section">
+          <div class="dir-header">USER MENU</div>
+
+          <div class="nav-item-wrapper" @click="$router.push('/profile')">
+            <div class="echo-btn">
+              <span class="icon">👤</span>
+              PROFILE
+            </div>
+          </div>
+
+          <div
+            v-if="authStore.isAdmin"
+            class="nav-item-wrapper"
+            @click="handleAdminClick"
+          >
+            <div class="echo-btn">
+              <span class="icon">⚙</span>
+              ADMIN
+            </div>
+          </div>
+
+          <div class="nav-item-wrapper" @click="handleLogout">
+            <div class="echo-btn danger">
+              <span class="icon">⎋</span>
+              LOGOUT
+            </div>
           </div>
         </div>
       </nav>
@@ -279,6 +302,20 @@ const fetchStats = async () => {
   }
 };
 
+// 处理管理员后台点击
+const handleAdminClick = () => {
+  window.open("/admin", "_blank");
+};
+
+// 处理登出
+const handleLogout = async () => {
+  try {
+    await authStore.logout();
+  } catch (error) {
+    console.error("Logout error:", error);
+  }
+};
+
 onMounted(async () => {
   await postsStore.fetchPosts();
   await Promise.all([
@@ -461,6 +498,13 @@ p {
   margin-bottom: 20px;
   border-bottom: 2px dashed #999;
   padding-bottom: 5px;
+  text-transform: uppercase;
+}
+
+.user-actions-section {
+  margin-top: 30px;
+  padding-top: 20px;
+  border-top: 2px solid #111;
 }
 
 .nav-item-wrapper {
@@ -479,6 +523,7 @@ p {
   cursor: pointer;
   box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.1);
   transition: all 0.1s;
+  font-family: var(--font-mono);
 }
 
 .echo-btn:hover {
@@ -490,6 +535,18 @@ p {
 .echo-btn.active {
   background: #111;
   color: #fff;
+}
+
+.echo-btn.danger {
+  background: #e74c3c;
+  color: white;
+  border-color: #111;
+}
+
+.echo-btn.danger:hover {
+  background: #c0392b;
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #111;
 }
 
 /* System Config (Bottom Left) */

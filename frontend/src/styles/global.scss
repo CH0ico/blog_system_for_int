@@ -296,7 +296,7 @@ p {
   border: map-get($cassette-borders, 'thin-black');
   
   &:hover {
-    background: darken(map-get($cassette-colors, 'warning-orange'), 10%);
+    background: #d35400; // 比 warning-orange 暗 10% 的橙色
   }
 }
 

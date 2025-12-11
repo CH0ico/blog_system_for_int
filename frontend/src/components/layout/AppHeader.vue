@@ -107,29 +107,6 @@
               {{ notificationStore.unreadCount }}
             </span>
           </div>
-
-          <!-- 用户操作 -->
-          <div class="cassette-user-actions">
-            <button class="cassette-btn" @click="handleUserCommand('profile')">
-              <span class="icon">👤</span>
-              PROFILE
-            </button>
-            <button
-              v-if="authStore.isAdmin"
-              class="cassette-btn warning"
-              @click="handleUserCommand('admin')"
-            >
-              <span class="icon">⚙</span>
-              ADMIN
-            </button>
-            <button
-              class="cassette-btn danger"
-              @click="handleUserCommand('logout')"
-            >
-              <span class="icon">⎋</span>
-              LOGOUT
-            </button>
-          </div>
         </div>
 
         <!-- 登录/注册按钮 -->
