@@ -7,7 +7,6 @@ export {}
 
 declare module 'vue' {
   export interface GlobalComponents {
-    AppFooter: typeof import('./src/components/layout/AppFooter.vue')['default']
     AppHeader: typeof import('./src/components/layout/AppHeader.vue')['default']
     CommentList: typeof import('./src/components/posts/CommentList.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']

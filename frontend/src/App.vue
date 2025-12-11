@@ -7,7 +7,7 @@
         <router-view />
       </main>
 
-      <AppFooter />
+
 
       <!-- 返回顶部按钮 -->
       <el-backtop :right="100" :bottom="100" />
@@ -68,7 +68,6 @@ import zhCn from "element-plus/dist/locale/zh-cn.mjs";
 import { User, Bell } from "@element-plus/icons-vue";
 
 import AppHeader from "@/components/layout/AppHeader.vue";
-import AppFooter from "@/components/layout/AppFooter.vue";
 import { useAuthStore } from "@/stores/auth";
 import { useSocketStore } from "@/stores/socket";
 import { useNotificationStore } from "@/stores/notification";

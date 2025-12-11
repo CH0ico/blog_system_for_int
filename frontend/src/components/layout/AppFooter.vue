@@ -16,10 +16,6 @@
         <div class="footer-section">
           <h4>快速链接</h4>
           <ul class="footer-links">
-            <li><router-link to="/">首页</router-link></li>
-            <li><router-link to="/posts">文章</router-link></li>
-            <li><router-link to="/archives">归档</router-link></li>
-            <li><router-link to="/tags">标签</router-link></li>
             <li><router-link to="/categories">分类</router-link></li>
             <li><router-link to="/about">关于</router-link></li>
           </ul>
@@ -52,20 +48,6 @@
         </div>
       </div>
 
-      <!-- 版权信息 -->
-      <div class="footer-bottom">
-        <div class="copyright">
-          <p>&copy; {{ currentYear }} 博客系统. All rights reserved.</p>
-          <p>Powered by Vue.js & Flask</p>
-        </div>
-
-        <!-- 统计信息 -->
-        <div v-if="stats.totalPosts > 0" class="stats">
-          <span>文章总数: {{ stats.totalPosts }}</span>
-          <span>运行天数: {{ stats.runningDays }}</span>
-          <span v-if="onlineCount > 0">在线用户: {{ onlineCount }}</span>
-        </div>
-      </div>
     </div>
   </el-footer>
 </template>
@@ -121,12 +103,15 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* 工业风页脚基础样式 */
 .app-footer {
-  background-color: var(--el-bg-color);
-  border-top: 1px solid var(--el-border-color-lighter);
+  background-color: #e6e4d8;
+  border-top: 4px solid #111;
   padding: 30px 0 15px;
   margin-top: auto;
   font-size: 14px;
+  font-family: 'Courier New', monospace;
+  box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .footer-container {
@@ -135,121 +120,163 @@ onMounted(() => {
   padding: 0 20px;
 }
 
+/* 页脚内容布局 - 工业风紧凑设计 */
 .footer-content {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 24px;
   margin-bottom: 24px;
+  border: 2px solid #111;
+  padding: 20px;
+  background: #fff;
+  box-shadow: 4px 4px 0 #111;
 }
 
+/* 工业风h4标题样式 */
 .footer-section h4 {
   margin-bottom: 14px;
-  color: var(--el-text-color-primary);
-  font-size: 15px;
-  font-weight: 600;
+  color: #111;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
   position: relative;
-  padding-bottom: 8px;
+  padding: 8px 12px;
+  background: #f7931e;
+  border: 2px solid #111;
+  box-shadow: 3px 3px 0 #111;
 }
 
+/* 移除原有的下划线效果，替换为工业风边框 */
 .footer-section h4::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 24px;
-  height: 2px;
-  background: var(--el-color-primary);
-  border-radius: 1px;
+  display: none;
 }
 
+/* 工业风p文本样式 */
 .footer-section p {
-  color: var(--el-text-color-secondary);
-  line-height: 1.5;
-  margin-bottom: 8px;
+  color: #111;
+  line-height: 1.6;
+  margin-bottom: 12px;
   font-size: 13px;
+  font-family: 'Courier New', monospace;
+  background: #f5f5f5;
+  padding: 8px;
+  border: 1px solid #111;
+  box-shadow: 2px 2px 0 #111;
 }
 
+/* 快速链接样式 */
 .footer-links {
   list-style: none;
   padding: 0;
 }
 
 .footer-links li {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .footer-links a {
-  color: var(--el-text-color-secondary);
+  color: #111;
   text-decoration: none;
   transition: all 0.2s ease;
   font-size: 13px;
+  font-family: 'Courier New', monospace;
   display: inline-block;
+  padding: 6px 10px;
+  background: #fff;
+  border: 2px solid #111;
+  box-shadow: 2px 2px 0 #111;
 }
 
 .footer-links a:hover {
-  color: var(--el-color-primary);
-  transform: translateX(3px);
+  color: #f7931e;
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 #111;
 }
 
+/* 技术栈标签 - 工业风设计 */
 .tech-stack {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
 .tech-stack .el-tag {
   margin: 0;
   font-size: 12px;
-  padding: 2px 8px;
-  background: var(--el-color-primary-light-9);
-  color: var(--el-color-primary);
-  border-color: var(--el-color-primary-light-7);
+  padding: 4px 8px;
+  background: #fff;
+  color: #111;
+  border: 2px solid #111;
+  border-radius: 0;
+  font-family: 'Courier New', monospace;
+  box-shadow: 2px 2px 0 #111;
 }
 
+/* 联系信息样式 */
 .contact-info p {
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-bottom: 8px;
 }
 
 .contact-info .el-icon {
   font-size: 14px;
-  color: var(--el-color-primary);
+  color: #111;
 }
 
+/* 页脚底部样式 - 工业风 */
 .footer-bottom {
-  border-top: 1px solid var(--el-border-color-lighter);
+  border-top: 2px solid #111;
   padding-top: 16px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
   gap: 12px;
+  background: #fff;
+  padding: 16px;
+  border: 2px solid #111;
+  box-shadow: 4px 4px 0 #111;
 }
 
 .copyright {
-  color: var(--el-text-color-secondary);
+  color: #111;
   font-size: 13px;
+  font-family: 'Courier New', monospace;
 }
 
 .copyright p {
   margin: 0;
   line-height: 1.4;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
 }
 
+/* 统计信息样式 */
 .stats {
   display: flex;
   gap: 12px;
-  color: var(--el-text-color-secondary);
+  color: #111;
   font-size: 13px;
+  font-family: 'Courier New', monospace;
 }
 
 .stats span {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  padding: 4px 8px;
+  background: #f7931e;
+  border: 2px solid #111;
+  box-shadow: 2px 2px 0 #111;
 }
 
+/* 响应式设计 - 保持工业风 */
 @media (max-width: 768px) {
   .footer-content {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
@@ -280,11 +307,13 @@ onMounted(() => {
   .footer-content {
     grid-template-columns: 1fr;
     gap: 16px;
+    padding: 15px;
   }
 
   .footer-section h4 {
-    font-size: 14px;
+    font-size: 13px;
     margin-bottom: 12px;
+    padding: 6px 10px;
   }
 
   .footer-section p,

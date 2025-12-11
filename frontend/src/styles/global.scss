@@ -48,6 +48,34 @@ html, body {
   @include grid-background(20px, rgba(21, 21, 21, 0.05));
 }
 
+// 基础元素 - 工业风样式统一
+h4 {
+  font-family: map-get($cassette-fonts, 'mono');
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: map-get($cassette-colors, 'deep-black');
+  background: map-get($cassette-colors, 'warning-orange');
+  border: map-get($cassette-borders, 'thin-black');
+  padding: 8px 12px;
+  box-shadow: map-get($cassette-shadows, 'hard-black');
+  display: inline-block;
+  margin: 0 0 10px 0;
+}
+
+p {
+  font-family: map-get($cassette-fonts, 'body');
+  font-size: 13px;
+  color: map-get($cassette-colors, 'deep-black');
+  line-height: 1.6;
+  background: map-get($cassette-colors, 'egg-white');
+  padding: 8px;
+  border: map-get($cassette-borders, 'thin-black');
+  box-shadow: map-get($cassette-shadows, 'soft-black');
+  margin: 0 0 12px 0;
+}
+
 // 磁带未来主义按钮样式
 .cassette-btn {
   @include mechanical-button;

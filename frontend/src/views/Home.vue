@@ -297,9 +297,9 @@ onMounted(async () => {
    ========================================= */
 
 :root {
-  --echo-orange: #ff5500; /* Project Echo 主题橙 */
-  --echo-yellow: #e6b800; /* 警告黄 */
-  --echo-bg: #eae8dc; /* 档案纸米色 */
+  --echo-orange: #f7931e; /* Project Echo 主题橙 - 工业风 */
+  --echo-yellow: #e6b800; /* 警告黄 - 工业风 */
+  --echo-bg: #e6e4d8; /* 档案纸米色 - 工业风 */
   --echo-dark: #111111; /* 墨黑 */
   --echo-border: 4px solid #111; /* 更粗的边框 */
   --echo-shadow: 8px 8px 0px rgba(0, 0, 0, 1); /* 更强的硬阴影 */
@@ -316,15 +316,45 @@ onMounted(async () => {
   display: flex;
   position: relative;
   overflow-x: hidden;
+  border: 10px solid var(--echo-dark); /* 工业风外边框 */
+  box-sizing: border-box;
 }
 
-/* --- CRT & Noise Effects --- */
+/* 基础元素 - 工业风样式统一 */
+h4 {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--echo-dark);
+  background: var(--echo-orange);
+  border: 2px solid var(--echo-dark);
+  padding: 8px 12px;
+  box-shadow: 3px 3px 0 var(--echo-dark);
+  display: inline-block;
+  margin: 0 0 10px 0;
+}
+
+p {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--echo-dark);
+  line-height: 1.6;
+  background: #f5f5f5;
+  padding: 8px;
+  border: 1px solid var(--echo-dark);
+  box-shadow: 2px 2px 0 var(--echo-dark);
+  margin: 0 0 12px 0;
+}
+
+/* --- CRT & Noise Effects - 增强工业风效果 --- */
 .crt-overlay {
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 9999;
-  opacity: 0.4;
+  opacity: 0.6; /* 增强CRT效果透明度 */
   mix-blend-mode: overlay;
 }
 .scanlines {
@@ -334,18 +364,41 @@ onMounted(async () => {
     to bottom,
     rgba(255, 255, 255, 0),
     rgba(255, 255, 255, 0) 50%,
-    rgba(0, 0, 0, 0.1) 50%,
-    rgba(0, 0, 0, 0.1)
+    rgba(0, 0, 0, 0.15) 50%, /* 增强扫描线浓度 */
+    rgba(0, 0, 0, 0.15)
   );
   background-size: 100% 4px;
+  animation: scanline-move 0.1s linear infinite; /* 扫描线动画效果 */
 }
+
+/* 扫描线移动动画 */
+@keyframes scanline-move {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 0 4px;
+  }
+}
+
 .noise {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.1'/%3E%3C/svg%3E"); /* 增强噪点浓度 */
+  animation: noise-flicker 0.2s infinite alternate; /* 噪点闪烁效果 */
+}
+
+/* 噪点闪烁动画 */
+@keyframes noise-flicker {
+  0% {
+    opacity: 0.08;
+  }
+  100% {
+    opacity: 0.12;
+  }
 }
 
 /* --- Sidebar (Left Column) --- */
