@@ -254,10 +254,10 @@ export const usePostsStore = defineStore("posts", () => {
     try {
       const response = await api.get("/posts/search", { params });
       const { posts: postsData, pagination: paginationData } = response.data;
-      
+
       posts.value = postsData;
       pagination.value = paginationData;
-      
+
       return postsData;
     } catch (error) {
       const message = error.response?.data?.message || "搜索文章失败";

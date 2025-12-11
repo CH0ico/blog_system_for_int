@@ -342,26 +342,28 @@ onMounted(() => {
 
 <style scoped>
 .cassette-header {
-  background: var(--el-bg-color);
-  border-bottom: none; /* 移除底部边框，消除空隙 */
+  background: #fff9ed;
+  border-bottom: 2px solid #2c2c2c;
   padding: 0;
   position: sticky;
   top: 0;
   z-index: 1000;
   height: 70px;
   margin: 0;
+  box-shadow: 0 2px 0 #e67e22;
 }
 
 .cassette-header-container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0;
+  padding: 0 20px;
   height: 70px; /* 与header高度一致 */
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
+/* Logo部分 */
 .cassette-logo-section {
   flex-shrink: 0;
   display: flex;
@@ -374,34 +376,40 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: var(--el-text-color-primary);
+  color: #2c2c2c;
   text-decoration: none;
   transition: color 0.2s ease;
-}
-
-.cassette-logo:hover {
-  color: var(--el-color-primary);
 }
 
 .cassette-wheel {
   width: 32px;
   height: 32px;
-  background: var(--el-color-primary);
-  border-radius: 4px;
+  background: #e67e22;
+  border: 2px solid #2c2c2c;
+  box-shadow: 2px 2px 0 #2c2c2c;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
   font-weight: bold;
   font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.cassette-logo:hover .cassette-wheel {
+  box-shadow: 3px 3px 0 #2c2c2c;
+  transform: translate(-1px, -1px);
 }
 
 .cassette-logo-text {
   font-size: 18px;
-  font-weight: 700;
-  color: var(--el-text-color-primary);
+  font-weight: 900;
+  color: #2c2c2c;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
+/* 导航菜单 */
 .cassette-nav-menu {
   flex: 1;
   display: flex;
@@ -410,7 +418,7 @@ onMounted(() => {
 
 .nav-directory {
   display: flex;
-  gap: 8px;
+  gap: 20px;
   align-items: center;
 }
 
@@ -419,27 +427,35 @@ onMounted(() => {
 }
 
 .echo-btn {
-  background: transparent;
-  border: none;
-  padding: 8px 16px;
-  font-size: 14px;
-  color: var(--el-text-color-secondary);
+  background: white;
+  border: 2px solid #2c2c2c;
+  box-shadow: 2px 2px 0 #2c2c2c;
+  padding: 10px 18px;
+  font-size: 13px;
+  color: #2c2c2c;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.1s ease;
   display: flex;
   align-items: center;
-  gap: 6px;
-  border-radius: 4px;
+  gap: 8px;
+  font-family: "Courier New", monospace;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
 }
 
 .echo-btn:hover {
-  background: var(--el-fill-color-light);
-  color: var(--el-color-primary);
+  background: #e67e22;
+  color: white;
+  box-shadow: 3px 3px 0 #2c2c2c;
+  transform: translate(-1px, -1px);
 }
 
 .echo-btn.active {
-  background: var(--el-color-primary-light-9);
-  color: var(--el-color-primary);
+  background: #e67e22;
+  color: white;
+  box-shadow: 2px 2px 0 #2c2c2c;
   font-weight: 600;
 }
 
@@ -447,12 +463,14 @@ onMounted(() => {
   font-size: 14px;
 }
 
+/* 用户操作区 */
 .cassette-user-section {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 20px;
 }
 
+/* 搜索框 */
 .cassette-search-box {
   position: relative;
   display: flex;
@@ -460,50 +478,57 @@ onMounted(() => {
 }
 
 .cassette-search-input {
-  background: var(--el-bg-color);
-  border: 1px solid var(--el-border-color);
-  border-radius: 16px;
-  padding: 6px 32px 6px 16px;
+  background: white;
+  border: 2px solid #2c2c2c;
+  box-shadow: 2px 2px 0 #2c2c2c;
+  border-radius: 0;
+  padding: 10px 40px 10px 20px;
   font-size: 13px;
-  color: var(--el-text-color-primary);
+  color: #2c2c2c;
   width: 180px;
   transition: all 0.2s ease;
   outline: none;
+  font-family: "Courier New", monospace;
+  margin: 0;
 }
 
 .cassette-search-input:focus {
-  border-color: var(--el-color-primary);
-  box-shadow: 0 0 0 2px var(--el-color-primary-light-5);
+  border-color: #e67e22;
+  box-shadow: 3px 3px 0 #e67e22;
+  transform: translate(-1px, -1px);
   width: 220px;
 }
 
 .cassette-search-input::placeholder {
-  color: var(--el-text-color-placeholder);
+  color: #666;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: "Courier New", monospace;
 }
 
 .search-icon {
   position: absolute;
-  right: 10px;
-  color: var(--el-text-color-placeholder);
+  right: 15px;
+  color: #2c2c2c;
   cursor: pointer;
   font-size: 14px;
   transition: color 0.2s ease;
 }
 
 .search-icon:hover {
-  color: var(--el-color-primary);
+  color: #e67e22;
 }
 
+/* 搜索建议 */
 .cassette-search-suggestions {
   position: absolute;
   top: 100%;
   left: 0;
   right: 0;
-  background: var(--el-bg-color);
-  border: 1px solid var(--el-border-color);
-  border-radius: 4px;
-  box-shadow: var(--el-box-shadow-light);
-  margin-top: 4px;
+  background: white;
+  border: 2px solid #2c2c2c;
+  box-shadow: 3px 3px 0 #2c2c2c;
+  margin-top: 5px;
   z-index: 1002;
   max-height: 200px;
   overflow-y: auto;
@@ -516,10 +541,18 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+  font-family: "Courier New", monospace;
+  font-size: 13px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.cassette-suggestion-item:last-child {
+  border-bottom: none;
 }
 
 .cassette-suggestion-item:hover {
-  background: var(--el-fill-color-light);
+  background: #fff9ed;
+  color: #e67e22;
 }
 
 .suggestion-icon {
@@ -528,99 +561,137 @@ onMounted(() => {
 
 .suggestion-text {
   font-size: 13px;
-  color: var(--el-text-color-primary);
+  color: #2c2c2c;
 }
 
+/* 按钮样式 */
 .cassette-btn {
-  background: var(--el-bg-color);
-  border: 1px solid var(--el-border-color);
-  border-radius: 4px;
-  padding: 6px 12px;
+  background: white;
+  border: 2px solid #2c2c2c;
+  box-shadow: 2px 2px 0 #2c2c2c;
+  border-radius: 0;
+  padding: 10px 16px;
   font-size: 13px;
-  color: var(--el-text-color-primary);
+  color: #2c2c2c;
   cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.cassette-btn:hover {
-  border-color: var(--el-color-primary);
-  color: var(--el-color-primary);
-}
-
-.cassette-btn.tech {
-  background: var(--el-color-primary);
-  border-color: var(--el-color-primary);
-  color: white;
-}
-
-.cassette-btn.tech:hover {
-  background: var(--el-color-primary-light-3);
-  border-color: var(--el-color-primary-light-3);
-}
-
-.cassette-btn.danger {
-  background: var(--el-color-danger);
-  border-color: var(--el-color-danger);
-  color: white;
-}
-
-.cassette-btn.danger:hover {
-  background: var(--el-color-danger-light-3);
-  border-color: var(--el-color-danger-light-3);
-}
-
-.cassette-user-menu {
+  transition: all 0.1s ease;
   display: flex;
   align-items: center;
   gap: 8px;
+  font-family: "Courier New", monospace;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0;
+}
+
+.cassette-btn:hover {
+  background: #f8f8f8;
+  border-color: #e67e22;
+  color: #e67e22;
+  box-shadow: 3px 3px 0 #e67e22;
+  transform: translate(-1px, -1px);
+}
+
+.cassette-btn.tech {
+  background: #e67e22;
+  border-color: #2c2c2c;
+  color: white;
+  box-shadow: 2px 2px 0 #2c2c2c;
+}
+
+.cassette-btn.tech:hover {
+  background: #d35400;
+  border-color: #2c2c2c;
+  box-shadow: 3px 3px 0 #2c2c2c;
+  transform: translate(-1px, -1px);
+}
+
+.cassette-btn.danger {
+  background: #e74c3c;
+  border-color: #2c2c2c;
+  color: white;
+  box-shadow: 2px 2px 0 #2c2c2c;
+}
+
+.cassette-btn.danger:hover {
+  background: #c0392b;
+  border-color: #2c2c2c;
+  box-shadow: 3px 3px 0 #2c2c2c;
+  transform: translate(-1px, -1px);
+}
+
+.cassette-btn.warning {
+  background: #f39c12;
+  border-color: #2c2c2c;
+  color: white;
+  box-shadow: 2px 2px 0 #2c2c2c;
+}
+
+.cassette-btn.warning:hover {
+  background: #e67e22;
+  border-color: #2c2c2c;
+  box-shadow: 3px 3px 0 #2c2c2c;
+  transform: translate(-1px, -1px);
+}
+
+/* 用户菜单 */
+.cassette-user-menu {
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 
 .cassette-notification-badge {
   position: relative;
   cursor: pointer;
-  padding: 6px;
-  border-radius: 50%;
-  transition: background 0.2s ease;
+  padding: 8px;
+  background: white;
+  border: 2px solid #2c2c2c;
+  box-shadow: 2px 2px 0 #2c2c2c;
+  transition: all 0.2s ease;
 }
 
 .cassette-notification-badge:hover {
-  background: var(--el-fill-color-light);
+  background: #fff9ed;
+  box-shadow: 3px 3px 0 #e67e22;
+  transform: translate(-1px, -1px);
 }
 
 .notification-icon {
   font-size: 18px;
-  color: var(--el-text-color-secondary);
+  color: #2c2c2c;
 }
 
 .notification-count {
   position: absolute;
-  top: 0;
-  right: 0;
-  background: var(--el-color-danger);
+  top: -5px;
+  right: -5px;
+  background: #e74c3c;
   color: white;
-  border-radius: 10px;
-  padding: 1px 6px;
+  border: 2px solid #2c2c2c;
+  border-radius: 50%;
+  padding: 2px 6px;
   font-size: 10px;
   font-weight: bold;
   min-width: 16px;
   text-align: center;
+  box-shadow: 2px 2px 0 #2c2c2c;
 }
 
 .cassette-user-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
 .cassette-auth-buttons {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
+/* 移动端菜单 */
 .cassette-mobile-menu-btn {
   display: none;
 }
@@ -652,9 +723,9 @@ onMounted(() => {
     top: 100%;
     left: 0;
     right: 0;
-    background: var(--el-bg-color);
-    border: 1px solid var(--el-border-color-lighter);
-    box-shadow: var(--el-box-shadow-light);
+    background: #fff9ed;
+    border: 2px solid #2c2c2c;
+    box-shadow: 3px 3px 0 #e67e22;
     z-index: 1001;
   }
 

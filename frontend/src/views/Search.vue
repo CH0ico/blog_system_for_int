@@ -41,10 +41,7 @@
         </div>
 
         <div v-else-if="searchPerformed" class="no-results">
-          <el-empty
-            description="未找到相关结果"
-            :image="Empty"
-          >
+          <el-empty description="未找到相关结果" :image="Empty">
             <el-button type="primary" @click="handleSearch">
               重新搜索
             </el-button>
@@ -52,10 +49,7 @@
         </div>
 
         <div v-else class="search-hint">
-          <el-empty
-            description="请输入关键词进行搜索"
-            :image="Search"
-          />
+          <el-empty description="请输入关键词进行搜索" :image="Search" />
         </div>
       </el-main>
     </el-container>
@@ -63,18 +57,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-import { Search, Empty } from '@element-plus/icons-vue';
-import PostCard from '@/components/posts/PostCard.vue';
-import { usePostsStore } from '@/stores/posts';
+import { ref, onMounted } from "vue";
+import { useRoute, useRouter } from "vue-router";
+import { Search, Empty } from "@element-plus/icons-vue";
+import PostCard from "@/components/posts/PostCard.vue";
+import { usePostsStore } from "@/stores/posts";
 
 const route = useRoute();
 const router = useRouter();
 const postsStore = usePostsStore();
 
 // 状态
-const searchQuery = ref('');
+const searchQuery = ref("");
 const searchResults = ref([]);
 const loading = ref(false);
 const searchPerformed = ref(false);
@@ -95,7 +89,7 @@ const handleSearch = async () => {
     });
     searchResults.value = results;
   } catch (error) {
-    console.error('Search error:', error);
+    console.error("Search error:", error);
   } finally {
     loading.value = false;
   }
@@ -103,7 +97,7 @@ const handleSearch = async () => {
 
 // 组件挂载时，如果URL中有搜索参数，则自动搜索
 onMounted(() => {
-  const query = route.query.q || '';
+  const query = route.query.q || "";
   if (query) {
     searchQuery.value = query;
     handleSearch();

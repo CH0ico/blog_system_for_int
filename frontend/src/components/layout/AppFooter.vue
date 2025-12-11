@@ -47,7 +47,6 @@
           </div>
         </div>
       </div>
-
     </div>
   </el-footer>
 </template>
@@ -110,7 +109,7 @@ onMounted(() => {
   padding: 30px 0 15px;
   margin-top: auto;
   font-size: 14px;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   box-shadow: inset 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
@@ -138,7 +137,7 @@ onMounted(() => {
   color: #111;
   font-size: 14px;
   font-weight: 700;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   text-transform: uppercase;
   letter-spacing: 0.1em;
   position: relative;
@@ -159,7 +158,7 @@ onMounted(() => {
   line-height: 1.6;
   margin-bottom: 12px;
   font-size: 13px;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   background: #f5f5f5;
   padding: 8px;
   border: 1px solid #111;
@@ -181,7 +180,7 @@ onMounted(() => {
   text-decoration: none;
   transition: all 0.2s ease;
   font-size: 13px;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   display: inline-block;
   padding: 6px 10px;
   background: #fff;
@@ -210,7 +209,7 @@ onMounted(() => {
   color: #111;
   border: 2px solid #111;
   border-radius: 0;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
   box-shadow: 2px 2px 0 #111;
 }
 
@@ -245,7 +244,7 @@ onMounted(() => {
 .copyright {
   color: #111;
   font-size: 13px;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
 }
 
 .copyright p {
@@ -263,7 +262,7 @@ onMounted(() => {
   gap: 12px;
   color: #111;
   font-size: 13px;
-  font-family: 'Courier New', monospace;
+  font-family: "Courier New", monospace;
 }
 
 .stats span {

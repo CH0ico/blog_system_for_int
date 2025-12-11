@@ -1,72 +1,67 @@
 <template>
   <div class="post-item">
-    <!-- 文章封面 -->
-    <div v-if="post.cover" class="post-cover" @click="goToPost">
-      <img :src="post.cover" :alt="post.title" />
-    </div>
-
-    <!-- 文章内容 -->
-    <div class="post-content">
-      <!-- 标题 -->
-      <h3 class="post-title" @click="goToPost">
-        {{ post.title }}
-      </h3>
-
-      <!-- 摘要 -->
-      <p v-if="post.summary" class="post-summary">
-        {{ post.summary }}
-      </p>
-
-      <!-- 元信息 -->
-      <div class="post-meta">
-        <div class="meta-left">
-          <!-- 作者 -->
-          <div class="author-info" @click.stop="goToAuthor">
-            <el-avatar
-              :src="post.author.avatar"
-              :size="20"
-              class="author-avatar"
-            >
-              {{
-                post.author.nickname?.charAt(0) ||
-                post.author.username?.charAt(0)
-              }}
-            </el-avatar>
-            <span class="author-name">{{
-              post.author.nickname || post.author.username
-            }}</span>
+    <!-- 文章卡片 -->
+    <div class="post-card">
+      <!-- 卡片头部 -->
+      <div class="post-card-header">
+        <div class="post-meta-info">
+          <div class="post-date">
+            <span class="date-label">LOG DATE:</span>
+            <span class="date-value">{{ formatTime(post.created_at) }}</span>
           </div>
+          <div class="post-title-section">
+            <h3 class="post-title" @click="goToPost">
+              {{ post.title }}
+            </h3>
+            <div class="post-status">
+              <span class="status-label">EMOTIONAL STATE:</span>
+              <span class="status-value">{{ getEmotionalState(post) }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="post-version">
+          ECHO V{{ (post.id % 10) + 1 }}.{{ (post.id % 5) + 1 }}
+        </div>
+      </div>
 
-          <!-- 时间 -->
-          <span class="post-time">{{ formatTime(post.created_at) }}</span>
+      <!-- 卡片内容 -->
+      <div class="post-card-content">
+        <!-- 摘要 -->
+        <p v-if="post.summary" class="post-summary">
+          {{ post.summary }}
+        </p>
 
-          <!-- 分类 -->
-          <el-tag
-            v-if="post.categories.length > 0"
-            size="small"
-            class="category-tag"
-            @click.stop="goToCategory(post.categories[0].slug)"
+        <!-- 封面图 -->
+        <div v-if="post.cover" class="post-cover-section">
+          <img :src="post.cover" :alt="post.title" class="post-cover" />
+        </div>
+      </div>
+
+      <!-- 卡片底部 -->
+      <div class="post-card-footer">
+        <!-- 操作按钮 -->
+        <div class="post-actions">
+          <button class="action-btn view-btn" @click="goToPost">
+            <span class="icon">👁️</span>
+            VIEW
+          </button>
+          <button
+            class="action-btn like-btn"
+            :class="{ liked: post.liked }"
+            @click.stop="handleLike"
           >
-            {{ post.categories[0].name }}
-          </el-tag>
+            <span class="icon">❤️</span>
+            LIKE ({{ post.like_count }})
+          </button>
+          <button class="action-btn comment-btn" @click="goToPost">
+            <span class="icon">💬</span>
+            COMMENT ({{ post.comment_count }})
+          </button>
         </div>
 
-        <!-- 统计数据 -->
-        <div class="meta-right">
-          <div class="stat-item" @click.stop="handleLike">
-            <el-icon :class="{ liked: post.liked }"><StarFilled /></el-icon>
-            <span>{{ post.like_count }}</span>
-          </div>
-          <div class="stat-item" @click.stop="handleFavorite">
-            <el-icon :class="{ favorited: post.favorited }"
-              ><Collection
-            /></el-icon>
-            <span>{{ post.favorite_count }}</span>
-          </div>
-          <div class="stat-item">
-            <el-icon><ChatDotRound /></el-icon>
-            <span>{{ post.comment_count }}</span>
-          </div>
+        <!-- 访问链接 -->
+        <div class="post-access">
+          <span class="access-label">[ACCESS FILE]</span>
         </div>
       </div>
     </div>
@@ -103,6 +98,26 @@ const canLike = computed(() => {
 const canFavorite = computed(() => {
   return authStore.isAuthenticated;
 });
+
+// 情感状态映射
+const emotionalStates = [
+  "探索",
+  "学习",
+  "好奇",
+  "认知",
+  "连接",
+  "理解",
+  "成长",
+  "觉醒",
+  "进化",
+  "超越",
+];
+
+// 获取情感状态
+const getEmotionalState = (post) => {
+  const index = post.id % emotionalStates.length;
+  return emotionalStates[index];
+};
 
 // 方法
 const goToPost = () => {
@@ -146,215 +161,276 @@ const handleFavorite = async () => {
 
 <style scoped>
 .post-item {
-  display: flex;
-  gap: 20px;
-  padding: 20px 0;
-  border-bottom: 1px solid var(--el-border-color-lighter);
-  cursor: pointer;
-  transition: all 0.25s ease;
-}
-
-.post-item:last-child {
-  border-bottom: none;
-}
-
-.post-item:hover {
-  background-color: var(--el-fill-color-light);
-  margin: 0 -20px;
-  padding: 20px;
-  border-radius: 12px;
-}
-
-.post-cover {
-  flex-shrink: 0;
-  width: 120px;
-  height: 80px;
-  border-radius: 6px;
-  overflow: hidden;
-  cursor: pointer;
-}
-
-.post-cover img {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
 }
 
-.post-item:hover .post-cover img {
-  transform: scale(1.05);
+/* 文档卡片样式 */
+.post-card {
+  background: white;
+  border: 2px solid #2c2c2c;
+  box-shadow: 4px 4px 0 #e67e22;
+  transition: all 0.3s ease;
+  overflow: hidden;
+  font-family: "Courier New", monospace;
 }
 
-.post-content {
+.post-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 6px 6px 0 #e67e22;
+}
+
+/* 卡片头部 */
+.post-card-header {
+  background: #fff9ed;
+  padding: 15px 20px;
+  border-bottom: 2px solid #2c2c2c;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+}
+
+.post-meta-info {
   flex: 1;
-  min-width: 0;
+}
+
+.post-date {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.date-label {
+  font-size: 12px;
+  font-weight: bold;
+  color: #e67e22;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.date-value {
+  font-size: 12px;
+  font-weight: bold;
+  color: #2c2c2c;
+}
+
+.post-title-section {
+  flex: 1;
 }
 
 .post-title {
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 900;
+  color: #2c2c2c;
   margin: 0 0 8px 0;
-  color: var(--el-text-color-primary);
-  line-height: 1.35;
+  line-height: 1.3;
   cursor: pointer;
   transition: color 0.2s;
 }
 
 .post-title:hover {
-  color: var(--el-color-primary);
+  color: #e67e22;
+}
+
+.post-status {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.status-label {
+  font-size: 11px;
+  font-weight: bold;
+  color: #e67e22;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.status-value {
+  font-size: 12px;
+  font-weight: bold;
+  color: #2c2c2c;
+  background: white;
+  padding: 3px 8px;
+  border: 1px solid #2c2c2c;
+  box-shadow: 1px 1px 0 #2c2c2c;
+}
+
+.post-version {
+  font-size: 12px;
+  font-weight: bold;
+  color: #e67e22;
+  background: white;
+  padding: 5px 10px;
+  border: 1px solid #2c2c2c;
+  box-shadow: 2px 2px 0 #2c2c2c;
+  align-self: center;
+}
+
+/* 卡片内容 */
+.post-card-content {
+  padding: 20px;
+  background: white;
 }
 
 .post-summary {
   font-size: 14px;
-  color: var(--el-text-color-secondary);
+  color: #2c2c2c;
   line-height: 1.6;
-  margin: 0 0 12px 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
+  margin: 0 0 15px 0;
+  text-align: justify;
+}
+
+.post-cover-section {
+  margin: 15px 0;
+  border: 1px solid #2c2c2c;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.1);
   overflow: hidden;
 }
 
-.post-meta {
+.post-cover {
+  width: 100%;
+  height: auto;
+  display: block;
+  transition: transform 0.3s ease;
+}
+
+.post-card:hover .post-cover {
+  transform: scale(1.02);
+}
+
+/* 卡片底部 */
+.post-card-footer {
+  background: #fff9ed;
+  padding: 15px 20px;
+  border-top: 2px solid #2c2c2c;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
+  gap: 20px;
 }
 
-.meta-left {
+/* 操作按钮 */
+.post-actions {
   display: flex;
-  align-items: center;
+  gap: 10px;
   flex-wrap: wrap;
-  gap: 8px;
 }
 
-.author-info {
+.action-btn {
+  background: white;
+  border: 1px solid #2c2c2c;
+  box-shadow: 2px 2px 0 #2c2c2c;
+  padding: 8px 12px;
+  font-family: "Courier New", monospace;
+  font-size: 11px;
+  font-weight: bold;
+  color: #2c2c2c;
+  cursor: pointer;
+  transition: all 0.1s ease;
   display: flex;
   align-items: center;
   gap: 6px;
-  cursor: pointer;
-  transition: color 0.3s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
-.author-info:hover {
-  color: var(--el-color-primary);
+.action-btn:hover {
+  background: #e67e22;
+  color: white;
+  box-shadow: 3px 3px 0 #2c2c2c;
+  transform: translate(-1px, -1px);
 }
 
-.author-avatar {
-  flex-shrink: 0;
+.action-btn:active {
+  box-shadow: 1px 1px 0 #2c2c2c;
+  transform: translate(1px, 1px);
 }
 
-.author-name {
-  font-size: 13px;
-  color: var(--el-text-color-secondary);
+.action-btn.liked {
+  background: #e74c3c;
+  color: white;
 }
 
-.post-time {
-  font-size: 13px;
-  color: var(--el-text-color-secondary);
+.action-btn.liked:hover {
+  background: #c0392b;
 }
 
-.category-tag {
-  cursor: pointer;
+.action-btn .icon {
+  font-size: 12px;
 }
 
-.meta-right {
+/* 访问链接 */
+.post-access {
   display: flex;
   align-items: center;
-  gap: 12px;
 }
 
-.stat-item {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 13px;
-  color: var(--el-text-color-secondary);
+.access-label {
+  font-size: 12px;
+  font-weight: bold;
+  color: #2c2c2c;
+  border: 1px solid #2c2c2c;
+  padding: 5px 10px;
+  background: white;
+  box-shadow: 2px 2px 0 #e67e22;
   cursor: pointer;
-  transition: color 0.3s;
+  transition: all 0.2s ease;
 }
 
-.stat-item:hover {
-  color: var(--el-color-primary);
-}
-
-.stat-item .el-icon {
-  font-size: 14px;
-}
-
-.stat-item .el-icon.liked {
-  color: var(--el-color-danger);
-}
-
-.stat-item .el-icon.favorited {
-  color: var(--el-color-warning);
+.access-label:hover {
+  box-shadow: 3px 3px 0 #e67e22;
+  transform: translate(-1px, -1px);
 }
 
 /* 响应式设计 */
 @media (max-width: 768px) {
-  .post-item {
-    flex-direction: column;
-    gap: 12px;
-  }
-
-  .post-cover {
-    width: 100%;
-    height: 150px;
-  }
-
-  .post-title {
-    font-size: 1rem;
-  }
-
-  .post-summary {
-    font-size: 13px;
-  }
-
-  .post-meta {
+  .post-card-header {
     flex-direction: column;
     align-items: flex-start;
-    gap: 6px;
+    gap: 15px;
   }
 
-  .meta-right {
-    align-self: flex-end;
+  .post-actions {
+    justify-content: center;
+  }
+
+  .post-card-footer {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+
+  .access-label {
+    text-align: center;
   }
 }
 
 @media (max-width: 480px) {
-  .post-item {
-    padding: 16px 0;
-  }
-
-  .post-item:hover {
-    margin: 0 -16px;
-    padding: 16px;
-  }
-
-  .post-cover {
-    height: 120px;
+  .post-card-header,
+  .post-card-content,
+  .post-card-footer {
+    padding: 15px;
   }
 
   .post-title {
-    font-size: 0.95rem;
+    font-size: 16px;
   }
 
-  .post-summary {
-    font-size: 12px;
+  .post-date,
+  .post-status {
+    flex-direction: column;
+    gap: 5px;
+    align-items: flex-start;
   }
 
-  .post-meta {
-    gap: 4px;
+  .post-actions {
+    justify-content: stretch;
   }
 
-  .stat-item {
-    font-size: 12px;
-  }
-
-  .stat-item .el-icon {
-    font-size: 12px;
+  .action-btn {
+    flex: 1;
+    justify-content: center;
   }
 }
 </style>

@@ -71,9 +71,7 @@
 
       <!-- 巨大标题 (ECHO LOG 风格) -->
       <header class="echo-header">
-        <h1 class="glitch-text" data-text="ECHO: choco">
-          ECHO: choco
-        </h1>
+        <h1 class="glitch-text" data-text="ECHO: choco">ECHO: choco</h1>
       </header>
 
       <!-- 登录者信息条 (黄色胶带风格) -->
@@ -149,17 +147,24 @@
       <section class="chapters-section">
         <!-- Latest List -->
         <div class="log-entries">
-          <div v-for="(post, index) in [...featuredPosts, ...latestPosts]" :key="post.id" class="log-entry">
+          <div
+            v-for="(post, index) in [...featuredPosts, ...latestPosts]"
+            :key="post.id"
+            class="log-entry"
+          >
             <div class="log-header">
               <div class="log-number">0{{ index + 1 }}</div>
               <div class="log-content">
                 <h3 class="log-title">{{ post.title }}</h3>
-                <p class="log-description">{{ post.excerpt || '无描述' }}</p>
+                <p class="log-description">{{ post.excerpt || "无描述" }}</p>
               </div>
               <div class="log-difficulty">阶段 {{ post.difficulty || 1 }}</div>
             </div>
             <div class="log-actions">
-              <button class="read-entry-btn" @click="$router.push(`/post/${post.id}`)">
+              <button
+                class="read-entry-btn"
+                @click="$router.push(`/post/${post.id}`)"
+              >
                 📖 READ ENTRY
               </button>
             </div>
@@ -364,8 +369,8 @@ p {
     to bottom,
     rgba(255, 255, 255, 0),
     rgba(255, 255, 255, 0) 50%,
-    rgba(0, 0, 0, 0.15) 50%, /* 增强扫描线浓度 */
-    rgba(0, 0, 0, 0.15)
+    rgba(0, 0, 0, 0.15) 50%,
+    /* 增强扫描线浓度 */ rgba(0, 0, 0, 0.15)
   );
   background-size: 100% 4px;
   animation: scanline-move 0.1s linear infinite; /* 扫描线动画效果 */

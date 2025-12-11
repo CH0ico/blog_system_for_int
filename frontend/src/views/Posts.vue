@@ -65,8 +65,16 @@
         </div>
 
         <div v-else-if="posts.length > 0" class="archive-files">
-          <div v-for="post in posts" :key="post.id" class="file-entry">
-            <PostItem :post="post" />
+          <div class="timeline-container">
+            <div class="timeline-line"></div>
+            <div
+              v-for="(post, index) in posts"
+              :key="post.id"
+              class="file-entry"
+            >
+              <div class="timeline-dot" :class="{ active: index === 0 }"></div>
+              <PostItem :post="post" />
+            </div>
           </div>
         </div>
 
@@ -118,8 +126,8 @@ import { ref, computed, onMounted, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAuthStore } from "@/stores/auth";
 import { usePostsStore } from "@/stores/posts";
-import PostItem from "@/components/PostItem.vue";
-import PostSkeleton from "@/components/PostSkeleton.vue";
+import PostItem from "@/components/posts/PostItem.vue";
+import PostSkeleton from "@/components/posts/PostSkeleton.vue";
 import { ElMessage } from "element-plus";
 
 const route = useRoute();
@@ -339,228 +347,247 @@ onMounted(async () => {
 .cassette-posts-terminal {
   position: relative;
   min-height: 100vh;
-  background-color: var(--color-eggshell);
-  color: var(--color-dark-black);
+  background-color: #f5f0e6;
+  background-image:
+    linear-gradient(rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.05) 1px, transparent 1px);
+  background-size: 20px 20px;
+  color: #2c2c2c;
   font-family: "Courier New", monospace;
   overflow: hidden;
 }
 
-/* CRT 屏幕特效 */
-.crt-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.scanlines {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: repeating-linear-gradient(
-    0deg,
-    rgba(21, 21, 21, 0.1) 0px,
-    rgba(21, 21, 21, 0.1) 1px,
-    transparent 1px,
-    transparent 2px
-  );
-  animation: scanlines 8s linear infinite;
-}
-
-.noise {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.05'/%3E%3C/svg%3E");
-  animation: noise 0.5s steps(10) infinite;
-}
-
-@keyframes scanlines {
-  0% {
-    transform: translateY(0);
-  }
-  100% {
-    transform: translateY(10px);
-  }
-}
-
-@keyframes noise {
-  0%,
-  100% {
-    transform: translate(0, 0);
-  }
-  10% {
-    transform: translate(-5%, -5%);
-  }
-  20% {
-    transform: translate(-10%, 5%);
-  }
-  30% {
-    transform: translate(5%, -10%);
-  }
-  40% {
-    transform: translate(-5%, 15%);
-  }
-  50% {
-    transform: translate(-10%, 5%);
-  }
-  60% {
-    transform: translate(15%, 0);
-  }
-  70% {
-    transform: translate(0, 10%);
-  }
-  80% {
-    transform: translate(-15%, 0);
-  }
-  90% {
-    transform: translate(10%, 5%);
-  }
-}
-
+/* 工业风标题栏 */
 .posts-directory {
   position: relative;
   z-index: 2;
   padding: 40px 20px;
-  max-width: 1200px;
+  max-width: 900px;
   margin: 0 auto;
 }
 
 .directory-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 40px;
-  padding: 20px;
-  background: var(--color-eggshell);
-  border: 3px solid var(--color-dark-black);
-  box-shadow: 4px 4px 0 var(--color-dark-black);
+  padding: 15px 20px;
+  background: #fff9ed;
+  border: 2px solid #2c2c2c;
+  box-shadow: 0 4px 0 #e67e22;
+  position: relative;
+}
+
+.directory-header::before {
+  content: "ECHO: ARCHIVE DIRECTORY";
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  background: #e67e22;
+  color: white;
+  padding: 5px 15px;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 2px 2px 0 #2c2c2c;
 }
 
 .directory-header h1 {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: 900;
-  color: var(--color-dark-black);
-  text-shadow: 3px 3px 0 var(--color-warning-orange);
+  color: #2c2c2c;
+  text-transform: uppercase;
   margin: 0;
-  letter-spacing: 2px;
+  letter-spacing: 3px;
 }
 
+/* 搜索和筛选区域 */
 .filter-console {
-  background: var(--color-eggshell);
-  border: 3px solid var(--color-dark-black);
-  box-shadow: 4px 4px 0 var(--color-dark-black);
-  padding: 30px;
-  margin-bottom: 30px;
+  background: #fff9ed;
+  border: 2px solid #2c2c2c;
+  box-shadow: 0 4px 0 #e67e22;
+  padding: 25px;
+  margin-bottom: 40px;
 }
 
 .search-console {
   display: flex;
   gap: 15px;
-  margin-bottom: 30px;
+  margin-bottom: 25px;
   align-items: center;
 }
 
 .cassette-search-input {
   flex: 1;
-  padding: 15px 20px;
-  border: 3px solid var(--color-dark-black);
-  background: var(--color-eggshell);
-  color: var(--color-dark-black);
+  padding: 12px 15px;
+  border: 2px solid #2c2c2c;
+  background: white;
+  color: #2c2c2c;
   font-family: "Courier New", monospace;
   font-size: 14px;
   font-weight: 600;
-  box-shadow: 2px 2px 0 var(--color-dark-black);
+  box-shadow: 0 2px 0 #2c2c2c;
   outline: none;
   transition: all 0.1s ease;
 }
 
 .cassette-search-input:focus {
-  box-shadow: 4px 4px 0 var(--color-warning-orange);
-  transform: translate(-2px, -2px);
+  box-shadow: 0 4px 0 #e67e22;
+  transform: translateY(-2px);
 }
 
 .cassette-search-input::placeholder {
-  color: var(--color-dark-black);
+  color: #2c2c2c;
   opacity: 0.6;
 }
 
 .filter-tabs {
   display: flex;
   gap: 10px;
-  margin-bottom: 30px;
+  margin-bottom: 0;
   flex-wrap: wrap;
 }
 
-.filter-options {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-
-.cassette-select {
-  padding: 12px 20px;
-  border: 3px solid var(--color-dark-black);
-  background: var(--color-eggshell);
-  color: var(--color-dark-black);
+.echo-btn {
+  background: white;
+  border: 2px solid #2c2c2c;
+  box-shadow: 0 2px 0 #2c2c2c;
+  padding: 10px 15px;
   font-family: "Courier New", monospace;
   font-size: 14px;
-  font-weight: 600;
-  box-shadow: 2px 2px 0 var(--color-dark-black);
-  outline: none;
+  font-weight: bold;
+  color: #2c2c2c;
   cursor: pointer;
   transition: all 0.1s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.cassette-select:focus {
-  box-shadow: 4px 4px 0 var(--color-warning-orange);
-  transform: translate(-2px, -2px);
+.echo-btn:hover,
+.echo-btn.active {
+  background: #e67e22;
+  color: white;
+  box-shadow: 0 4px 0 #2c2c2c;
+  transform: translateY(-2px);
 }
 
+.cassette-btn {
+  background: white;
+  border: 2px solid #2c2c2c;
+  box-shadow: 0 2px 0 #2c2c2c;
+  padding: 10px 15px;
+  font-family: "Courier New", monospace;
+  font-size: 14px;
+  font-weight: bold;
+  color: #2c2c2c;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cassette-btn:hover:not(:disabled) {
+  background: #e67e22;
+  color: white;
+  box-shadow: 0 4px 0 #2c2c2c;
+  transform: translateY(-2px);
+}
+
+.cassette-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* 文章列表区域 */
 .posts-archive {
-  background: var(--color-eggshell);
-  border: 3px solid var(--color-dark-black);
-  box-shadow: 4px 4px 0 var(--color-dark-black);
+  background: #fff9ed;
+  border: 2px solid #2c2c2c;
+  box-shadow: 0 4px 0 #e67e22;
   padding: 30px;
   margin-bottom: 30px;
+  position: relative;
 }
 
+.posts-archive::before {
+  content: "ARCHIVE LOGS";
+  position: absolute;
+  top: -10px;
+  left: 10px;
+  background: #e67e22;
+  color: white;
+  padding: 5px 15px;
+  font-size: 12px;
+  font-weight: bold;
+  box-shadow: 2px 2px 0 #2c2c2c;
+}
+
+/* 时间线容器 */
+.timeline-container {
+  position: relative;
+  padding-left: 30px;
+}
+
+.timeline-line {
+  position: absolute;
+  left: 14px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #e67e22;
+  border-left: 2px dashed #fff;
+}
+
+/* 文章项 */
 .archive-files {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
 }
 
 .file-entry {
-  border: 2px solid var(--color-dark-black);
-  background: var(--color-eggshell);
-  box-shadow: 2px 2px 0 var(--color-dark-black);
-  transition: all 0.1s ease;
+  position: relative;
+  margin-bottom: 20px;
+  width: 100%;
 }
 
-.file-entry:hover {
-  box-shadow: 4px 4px 0 var(--color-warning-orange);
-  transform: translate(-2px, -2px);
+.timeline-dot {
+  position: absolute;
+  left: -35px;
+  top: 20px;
+  width: 12px;
+  height: 12px;
+  background: #fff;
+  border: 3px solid #e67e22;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px #fff9ed;
+  z-index: 3;
+  transition: all 0.3s ease;
 }
 
+.timeline-dot.active {
+  background: #e67e22;
+  transform: scale(1.2);
+  box-shadow:
+    0 0 0 2px #fff9ed,
+    0 0 10px rgba(230, 126, 34, 0.5);
+}
+
+.file-entry:hover .timeline-dot {
+  transform: scale(1.1);
+}
+
+/* 加载骨架 */
 .loading-skeleton {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-  gap: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
 }
 
+/* 空状态 */
 .empty-archive {
   text-align: center;
   padding: 80px 20px;
-  border: 3px dashed var(--color-dark-black);
-  background: rgba(21, 21, 21, 0.05);
+  border: 2px dashed #2c2c2c;
+  background: rgba(230, 126, 34, 0.05);
+  margin-top: 30px;
 }
 
 .empty-icon {
@@ -572,22 +599,23 @@ onMounted(async () => {
 .empty-text {
   font-size: 24px;
   font-weight: 900;
-  color: var(--color-dark-black);
+  color: #2c2c2c;
   margin-bottom: 10px;
   letter-spacing: 2px;
 }
 
 .empty-subtext {
   font-size: 16px;
-  color: var(--color-dark-black);
+  color: #2c2c2c;
   opacity: 0.6;
   font-family: "Courier New", monospace;
 }
 
+/* 分页区域 */
 .pagination-console {
-  background: var(--color-eggshell);
-  border: 3px solid var(--color-dark-black);
-  box-shadow: 4px 4px 0 var(--color-dark-black);
+  background: #fff9ed;
+  border: 2px solid #2c2c2c;
+  box-shadow: 0 4px 0 #e67e22;
   padding: 20px;
   display: flex;
   justify-content: space-between;
@@ -599,7 +627,7 @@ onMounted(async () => {
 .pagination-info {
   font-family: "Courier New", monospace;
   font-weight: 600;
-  color: var(--color-dark-black);
+  color: #2c2c2c;
   font-size: 14px;
 }
 
@@ -612,7 +640,7 @@ onMounted(async () => {
 .page-indicator {
   font-family: "Courier New", monospace;
   font-weight: 900;
-  color: var(--color-dark-black);
+  color: #2c2c2c;
   font-size: 16px;
   letter-spacing: 1px;
 }
@@ -639,19 +667,6 @@ onMounted(async () => {
 
   .filter-tabs {
     justify-content: center;
-  }
-
-  .filter-options {
-    flex-direction: column;
-  }
-
-  .cassette-select {
-    width: 100%;
-  }
-
-  .archive-files,
-  .loading-skeleton {
-    grid-template-columns: 1fr;
   }
 
   .pagination-console {
@@ -684,6 +699,14 @@ onMounted(async () => {
 
   .page-indicator {
     font-size: 14px;
+  }
+
+  .timeline-container {
+    padding-left: 25px;
+  }
+
+  .timeline-dot {
+    left: -30px;
   }
 }
 </style>
