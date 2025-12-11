@@ -15,6 +15,9 @@ export const useSocketStore = defineStore("socket", () => {
   const onlineCount = ref(0);
   const currentRoom = ref(null);
   const typingUsers = ref([]);
+  const reconnectAttempts = ref(0);
+  const maxReconnectAttempts = 5;
+  const reconnectDelay = 3000; // 3秒
 
   // 计算属性
   const isAuthenticated = computed(() => authStore.isAuthenticated);
@@ -113,7 +116,7 @@ export const useSocketStore = defineStore("socket", () => {
       // 用户输入状态
       this.on('user_typing', (data) => {
         const existingUser = typingUsers.value.find(
-          (u) => u.user_id === data.user_id,
+          (u) => u.user_id === data.user_id
         );
         if (!existingUser) {
           typingUsers.value.push({
@@ -126,7 +129,7 @@ export const useSocketStore = defineStore("socket", () => {
 
       this.on('user_stop_typing', (data) => {
         typingUsers.value = typingUsers.value.filter(
-          (u) => u.user_id !== data.user_id,
+          (u) => u.user_id !== data.user_id
         );
       });
 
@@ -344,34 +347,16 @@ export const useSocketStore = defineStore("socket", () => {
     cleanupInterval = setInterval(cleanupTypingUsers, 5000); // 每5秒清理一次
   };
 
-  const stopCleanup = () => {
-    if (cleanupInterval) {
-      clearInterval(cleanupInterval);
-      cleanupInterval = null;
-    }
-  };
-
-  // 监听认证状态变化
-  const watchAuthStatus = () => {
-    // 如果用户登录了，初始化Socket
-    if (isAuthenticated.value && !socket.value) {
-      initializeSocket();
-      startCleanup();
-    }
-
-    // 如果用户登出了，断开Socket
-    if (!isAuthenticated.value && socket.value) {
-      disconnectSocket();
-      stopCleanup();
-    }
-  };
-
   return {
+    // 状态
     socket,
     isConnected,
     onlineCount,
     currentRoom,
     typingUsers,
+    reconnectAttempts,
+    
+    // 方法
     initializeSocket,
     disconnectSocket,
     joinRoom,
@@ -382,6 +367,5 @@ export const useSocketStore = defineStore("socket", () => {
     emitEvent,
     onEvent,
     offEvent,
-    watchAuthStatus,
   };
 });
